@@ -14,7 +14,44 @@
 	<div class="row">
 		<div class="col-6" id="left-col">
 			<div class="row" id="text-description">
-				Gráfico que muestra los casos totales de COVID-19 por comuna en todo Chile.
+				Este gráfico muestra el número de
+				<form class="form-inline">
+					<div class="form-group">
+						<select class="form-control" id="cantidad">
+							<option value="casos-totales">Casos totales</option>
+							<option value="casos-tasa">Casos por cada 100.000 habitantes</option>
+							<option value="muertes-totales">Muertes totales</option>
+							<option value="muertes-tasa">Muertes por cada 100.00 habitantes</option>
+						</select>
+					</div>
+				</form>
+				en
+				<form class="form-inline">
+					<div class="form-group">
+						<select class="form-control" id="macrozona">
+							<option value="todo-chile">todo Chile</option>
+							<option value="toda-region">región</option>
+						</select>
+					</div>
+				</form>
+				por 
+				<form class="form-inline">
+					<div class="form-group">
+						<select class="form-control" id="microzona">
+							<option value="comunas">comuna</option>
+							<option value="regiones">región</option>
+						</select>
+					</div>
+				</form>
+				en escala
+				<form class="form-inline">
+					<div class="form-group">
+						<select class="form-control" id="escala">
+							<option value="escala-lineal">lineal</option>
+							<option value="escala-logaritmica">logarítmica</option>
+						</select>
+					</div>
+				</form>
 			</div>
 			<div class="row" id="plot">
 			</div>
