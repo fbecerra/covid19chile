@@ -12,20 +12,9 @@
 <body>
 
 	<div class="row">
-		<div class="col-6" id="left-col">
+		<div class="col-7" id="left-col">
 			<div class="row" id="text-description">
-				Este gráfico muestra el número de
-				<form class="form-inline">
-					<div class="form-group">
-						<select class="form-control" id="cantidad">
-							<option value="casos-totales">Casos totales</option>
-							<option value="casos-tasa">Casos por cada 100.000 habitantes</option>
-							<option value="muertes-totales">Muertes totales</option>
-							<option value="muertes-tasa">Muertes por cada 100.00 habitantes</option>
-						</select>
-					</div>
-				</form>
-				en
+				Este es un gráfico de
 				<form class="form-inline">
 					<div class="form-group">
 						<select class="form-control" id="macrozona">
@@ -34,7 +23,20 @@
 						</select>
 					</div>
 				</form>
-				por 
+				que muestra el número de
+				<form class="form-inline">
+					<div class="form-group">
+						<select class="form-control" id="cantidad">
+							<option value="casos-totales">Casos totales</option>
+							<option value="casos-tasa">Casos por cada 100.000 habitantes</option>
+							<option value="casos-nuevos">Casos nuevos</option>
+							<option value="muertes-totales">Muertes totales</option>
+							<option value="muertes-tasa">Muertes por cada 100.00 habitantes</option>
+							<option value="muertes-nuevas">Muertes nuevas</option>
+						</select>
+					</div>
+				</form>
+				en cada
 				<form class="form-inline">
 					<div class="form-group">
 						<select class="form-control" id="microzona">
@@ -56,7 +58,7 @@
 			<div class="row" id="plot">
 			</div>
 		</div>
-		<div class="col-6" id="right-col">
+		<div class="col-5" id="right-col">
 		</div>
 	</div>
 

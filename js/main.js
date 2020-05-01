@@ -6,7 +6,7 @@ var plot = d3.select("#plot")
     .attr("width", plotWidth)
     .attr("height", plotHeight);
 
-var margin = {top: 50, right: 50, bottom: 50, left: 50},
+var margin = {top: 50, right: 80, bottom: 50, left: 50},
     // width = window.innerWidth - margin.left - margin.right, // Use the window's width
     // height = window.innerHeight - margin.top - margin.bottom; // Use the window's height
     width = plotWidth - margin.left - margin.right,
@@ -98,10 +98,11 @@ d3.csv('data/casos_por_comuna.csv')
 
       svg.append("text")
         .text(ele.Comuna)
-        .attr("x", width - margin.left/2 - 20)
+        .attr("x", width - margin.left/2 - margin.right/2)
         .attr("y", yScale(datos[datos.length-1].y) + 5)
         .attr("fill", d3.interpolateViridis(datos[datos.length-1].y/yScale.domain()[1]))
         .attr("class", "name "+nameNoSpaces(ele.Comuna))
+        // .attr("opacity", 0.5)
         .attr("text-anchor", "start")
         // .attr("font-weight", "bold")
         .on("mouseover", function(){
