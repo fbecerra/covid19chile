@@ -1,8 +1,16 @@
 
+var plotWidth = d3.select("#left-col").node().getBoundingClientRect().width,
+    plotHeight = window.innerHeight * 0.8;
+
+var plot = d3.select("#plot")
+    .attr("width", plotWidth)
+    .attr("height", plotHeight);
 
 var margin = {top: 50, right: 50, bottom: 50, left: 50},
-    width = window.innerWidth - margin.left - margin.right, // Use the window's width
-    height = window.innerHeight - margin.top - margin.bottom; // Use the window's height
+    // width = window.innerWidth - margin.left - margin.right, // Use the window's width
+    // height = window.innerHeight - margin.top - margin.bottom; // Use the window's height
+    width = plotWidth - margin.left - margin.right,
+    height = plotHeight - margin.top - margin.bottom;
 
 var dateParse = d3.timeParse("%Y-%m-%d");
 
@@ -13,7 +21,7 @@ var yScale = d3.scaleLinear()
 var line = d3.line()
     .curve(d3.curveMonotoneX)
 
-var svg = d3.select("body").append("svg")
+var svg = plot.append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -43,7 +51,7 @@ d3.csv('data/casos_por_comuna.csv')
 
     xScale.domain(d3.extent(dates))
     yScale.domain([0, d3.max(data, d => d3.max(d.cases))]).nice()
-    console.log(xScale.domain(), yScale.domain());
+    // console.log(xScale.domain(), yScale.domain());
 
     line.x(d => xScale(d.x))
       .y(d => yScale(d.y))
@@ -66,7 +74,7 @@ d3.csv('data/casos_por_comuna.csv')
         return {x: dates[i], y: d};
       });
 
-      console.log(ele);
+      // console.log(ele);
 
       svg.append("path")
           .datum(datos)
