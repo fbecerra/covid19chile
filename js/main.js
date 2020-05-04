@@ -38,7 +38,7 @@ var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
 }
 
-d3.csv('data/casos_por_comuna.csv')
+d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto1/Covid-19.csv')
   .then(function(data) {
     // console.log(data);
     datesString = data.columns.filter(d => d.slice(0,4) == '2020')
