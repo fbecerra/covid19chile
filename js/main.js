@@ -18,6 +18,8 @@ var xScale = d3.scaleTime()
     .range([margin.left, width - margin.right])
 var yScale = d3.scaleLinear()
     .range([height - margin.bottom, margin.top])
+var yLogScale = d3.scaleLog()
+    .range([height - margin.bottom, margin.top])
 var line = d3.line()
     .curve(d3.curveMonotoneX)
 
@@ -38,19 +40,22 @@ var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
 }
 
-d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto1/Covid-19.csv')
-  .then(function(data) {
+Promise.all([
+    d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto1/Covid-19.csv')
+]).then(function(data) {
+
     // console.log(data);
-    datesString = data.columns.filter(d => d.slice(0,4) == '2020')
+    datesString = data[0].columns.filter(d => d.slice(0,4) == '2020')
     dates = datesString.map(d => dateParse(d))
-    data.forEach(function(ele){
+    data[0].forEach(function(ele){
       ele.cases = datesString.map(d => +ele[d])
       // console.log(ele)
     })
     // console.log(dates);
 
     xScale.domain(d3.extent(dates))
-    yScale.domain([0, d3.max(data, d => d3.max(d.cases))]).nice()
+    yScale.domain([0, d3.max(data[0], d => d3.max(d.cases))]).nice()
+    yLogScale.domain([1, d3.max(data[0], d => d3.max(d.cases))])
     // console.log(xScale.domain(), yScale.domain());
 
     line.x(d => xScale(d.x))
@@ -68,7 +73,7 @@ d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output
       .attr("font-weight", "bold")
       .text("Casos Totales"));
 
-    data.forEach(function(ele){
+    data[0].forEach(function(ele){
 
       let datos = ele.cases.map(function(d,i){
         return {x: dates[i], y: d};
@@ -104,6 +109,7 @@ d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output
         .attr("class", "name "+nameNoSpaces(ele.Comuna))
         // .attr("opacity", 0.5)
         .attr("text-anchor", "start")
+        .attr("font-size", "1rem")
         // .attr("font-weight", "bold")
         .on("mouseover", function(){
           d3.selectAll(".curve")
