@@ -153,31 +153,35 @@ Promise.all([
         if (formValue === "escala-logaritmica"){
           yScale = d3.scaleLog()
               .range([height - margin.bottom, margin.top])
-              .domain([1, d3.max(data[0], d => d3.max(d.values))])
+              .domain([4, d3.max(data[0], d => d3.max(d.values))])
+          yAxis.scale(yScale)
+              .tickValues([5, 10, 50, 100, 500, 1000, 2000])
+              // .ticks(2)
+              .tickFormat(d3.format('i'))
         } else if (formValue === "escala-lineal") {
           yScale = d3.scaleLinear()
               .range([height - margin.bottom, margin.top])
               .domain([0, d3.max(data[0], d => d3.max(d.values))]).nice()
+          yAxis.scale(yScale)
         }
 
-        yAxis.scale(yScale);
-        line2.y(d => yScale(d))
+        line2.y(d => yScale(d));
 
         d3.select("g.axis.y")
-          // .transition(200)
-          // .duration(500)
+          .transition(200)
+          .duration(500)
           .call(yAxis);
 
         var selection = d3.selectAll(".curve").data(data[0])
 
         selection.enter()
           .append("path")
-          //.transition(500)
+          .transition(500)
           .attr("d", function(d){
             return line2(d.values)
           })
 
-        selection//.transition(500)
+        selection.transition(500)
           .attr("d", function(d){
             return line2(d.values)
           })
