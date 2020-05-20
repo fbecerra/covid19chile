@@ -153,19 +153,19 @@ Promise.all([
         if (formValue === "escala-logaritmica"){
           yScale = d3.scaleLog()
               .range([height - margin.bottom, margin.top])
-              .domain([4, d3.max(data[0], d => d3.max(d.values))])
+              .domain([1, d3.max(data[0], d => d3.max(d.values)) + 1])
           yAxis.scale(yScale)
-              .tickValues([5, 10, 50, 100, 500, 1000, 2000])
+              .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000])
               // .ticks(2)
               .tickFormat(d3.format('i'))
+          line2.y(d => yScale(d + 1));
         } else if (formValue === "escala-lineal") {
           yScale = d3.scaleLinear()
               .range([height - margin.bottom, margin.top])
               .domain([0, d3.max(data[0], d => d3.max(d.values))]).nice()
-          yAxis.scale(yScale)
+          yAxis.scale(yScale);
+          line2.y(d => yScale(d));
         }
-
-        line2.y(d => yScale(d));
 
         d3.select("g.axis.y")
           .transition(200)
