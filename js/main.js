@@ -146,7 +146,7 @@ Promise.all([
       function moved() {
         d3.event.preventDefault();
         const mouse = d3.mouse(this);
-        const xm = xScale.invert(mouse[0]-margin.left);
+        const xm = xScale.invert(mouse[0]-margin.left); // TODO: CONSTRAIN WITHIN RIGHT MARGIN
         const ym = yScale.invert(mouse[1]-margin.top);
         const i1 = d3.bisectLeft(dates, xm, 1);
         const i0 = i1 - 1;
@@ -160,8 +160,9 @@ Promise.all([
           .attr("opacity", 1.0)
           .attr("stroke", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
         path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
-        dot.attr("transform", `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i])+margin.top})`);
-        dot.select("text").text(s.values[i]);
+        dot.attr("fill", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
+          .attr("transform", `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i])+margin.top})`);
+        dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
       }
 
       function entered() {
