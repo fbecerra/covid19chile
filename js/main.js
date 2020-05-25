@@ -29,13 +29,14 @@ var line2 = d3.line()
 var svg = plot.append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .append("g")
+
+var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var gXAxis = svg.append("g")
+var gXAxis = g.append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + (height - margin.top) + ")");
-var gYAxis = svg.append("g")
+var gYAxis = g.append("g")
     .attr("class", "y axis")
     .attr("transform", "translate(" + margin.left + ",0)");
 
@@ -87,7 +88,7 @@ Promise.all([
 
     console.log(data[0]);
 
-    const curves = svg.append("g")
+    var curves = g.append("g")
       .attr("fill", "none")
       .attr("stroke-width", 1.5)
       .attr("stroke-linejoin", "round")
@@ -100,20 +101,82 @@ Promise.all([
       .style("mix-blend-mode", "multiply")
       .attr("opacity", 0.8)
       .attr("class", d => "curve "+nameNoSpaces(d.Comuna))
+      // .attr("stroke", "lightgray")
       .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
       .attr("d", d => line2(d.values))
-      .on("mouseover", function(){
+      // .on("mouseover", function(){
+      //   d3.selectAll(".curve")
+      //     .attr("opacity", 0.5)
+      //     .attr("stroke","lightgray")
+      //   d3.select(this).attr("opacity", 1.0)
+      //     .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
+      // })
+      // .on('mouseleave', function(){
+      //   d3.selectAll(".curve")
+      //     .attr("opacity", 0.8)
+      //     .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
+      // });
+
+    svg.call(hover, curves)
+
+    function hover(svg, path) {
+
+      if ("ontouchstart" in document) svg
+          .style("-webkit-tap-highlight-color", "transparent")
+          .on("touchmove", moved)
+          .on("touchstart", entered)
+          .on("touchend", left)
+      else svg
+          .on("mousemove", moved)
+          .on("mouseenter", entered)
+          .on("mouseleave", left);
+
+      const dot = svg.append("g")
+          .attr("display", "none");
+
+      dot.append("circle")
+          .attr("r", 2.5);
+
+      dot.append("text")
+          .attr("font-family", "sans-serif")
+          .attr("font-size", 10)
+          .attr("text-anchor", "middle")
+          .attr("y", -8);
+
+      function moved() {
+        d3.event.preventDefault();
+        const mouse = d3.mouse(this);
+        const xm = xScale.invert(mouse[0]-margin.left);
+        const ym = yScale.invert(mouse[1]-margin.top);
+        const i1 = d3.bisectLeft(dates, xm, 1);
+        const i0 = i1 - 1;
+        const i = xm - dates[i0] > dates[i1] - xm ? i1 : i0;
+        const s = d3.least(data[0], d => Math.abs(d.values[i] - ym));
+        // console.log(s)
         d3.selectAll(".curve")
-          .attr("opacity", 0.5)
-          .attr("stroke","lightgray")
-        d3.select(this).attr("opacity", 1.0)
-          .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
-      })
-      .on('mouseleave', function(){
+            .attr("opacity", 0.5)
+            .attr("stroke","lightgray")
+        d3.select(".curve."+nameNoSpaces(s.Comuna))
+          .attr("opacity", 1.0)
+          .attr("stroke", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
+        path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
+        dot.attr("transform", `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i])+margin.top})`);
+        dot.select("text").text(s.values[i]);
+      }
+
+      function entered() {
+        path.style("mix-blend-mode", null).attr("stroke", "#ddd");
+        dot.attr("display", null);
+      }
+
+      function left() {
         d3.selectAll(".curve")
-          .attr("opacity", 0.8)
-          .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
-      });
+            .attr("opacity", 0.8)
+            .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
+        path.style("mix-blend-mode", "multiply").attr("stroke", null);
+        dot.attr("display", "none");
+      }
+    }
 
     // data[0].forEach(function(ele){
     //
