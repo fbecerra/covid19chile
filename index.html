@@ -26,13 +26,25 @@
 				que muestra el número de
 				<form class="form-inline">
 					<div class="form-group">
+						<select class="form-control" id="indicador">
+							<option value="casos">Casos</option>
+							<option value="muertes">Muertes</option>
+						</select>
+					</div>
+				</form>
+				<form class="form-inline">
+					<div class="form-group">
 						<select class="form-control" id="cantidad">
-							<option value="casos-totales">Casos totales</option>
-							<option value="casos-tasa">Casos por cada 100.000 habitantes</option>
-							<option value="casos-nuevos">Casos nuevos</option>
-							<option value="muertes-totales">Muertes totales</option>
-							<option value="muertes-tasa">Muertes por cada 100.00 habitantes</option>
-							<option value="muertes-nuevas">Muertes nuevas</option>
+							<option value="nuevos">nuevos</option>
+							<option value="acumulados">acumulados</option>
+						</select>
+					</div>
+				</form>
+				<form class="form-inline">
+					<div class="form-group">
+						<select class="form-control" id="unidad">
+							<option value="totales">totales</option>
+							<option value="tasa">por cada 100.000 habitantes</option>
 						</select>
 					</div>
 				</form>
