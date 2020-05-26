@@ -86,10 +86,13 @@ Promise.all([
       labelsOutput[label] = poblacionRegion;
     }
 
-    // Delete "total" in Regiones
+    // Delete "total" in Regiones and add Population
     let totalRegiones = data[1].filter(d => d.Region == 'Total')
     let indexTotal = data[1].indexOf(totalRegiones);
     data[1].splice(indexTotal, 1);
+    data[1].forEach(function(ele){
+      ele["Poblacion"] = labelsOutput[ele.Region];
+    });
 
     // Add listeners to form objects
     addListeners();
@@ -132,10 +135,13 @@ Promise.all([
           }
           drawPlot();
         });
+        if (unidad !== null) unidad.addEventListener('change', function(){
+          state.unidad = unidad.value;
+          drawPlot();
+        });
         if (escala !== null) escala.addEventListener('change', function(){
           state.escala = escala.value;
           drawPlot();
-          // loadData();
         });
         // if (colorby !== null) colorby.addEventListener('change', function(){
         //   state.fields_schema.colorby.selected = colorby.value;
@@ -158,15 +164,16 @@ Promise.all([
 
     function drawPlot() {
 
-      console.log(state.data)
-
       datesString = state.data.columns.filter(d => d.slice(0,4) == '2020')
       dates = datesString.map(d => dateParse(d))
+      let factor;
       state.data.forEach(function(ele){
-        ele.values = datesString.map(d => +ele[d]);
-        if (state.microzona == 'Region') {
-          ele["Poblacion"] = labelsOutput[ele.Region];
+        if (state.unidad == 'totales') {
+          factor = 1.0;
+        } else if (state.unidad == 'tasa'){
+          factor = ele.Poblacion/100000;
         }
+        ele.values = datesString.map(d => +ele[d]/factor);
       })
 
       // console.log(state, dates)
