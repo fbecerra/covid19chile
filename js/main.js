@@ -76,17 +76,20 @@ Promise.all([
     data[0].forEach(function(ele){
       ele.Poblacion = +ele.Poblacion;
     })
-    console.log(data[0])
     var labelsRegiones = new Set(data[0].map(d => d.Region));
     var labelsArray = [...labelsRegiones];
     var labelsOutput = {};
     for (let label of labelsArray){
-      console.log(data[0].filter(d => d.Region == label))
       let poblacionRegion = data[0].filter(d => d.Region == label).reduce(function(a,b){
         return a + b.Poblacion;
       }, 0);
       labelsOutput[label] = poblacionRegion;
     }
+
+    // Delete "total" in Regiones
+    let totalRegiones = data[1].filter(d => d.Region == 'Total')
+    let indexTotal = data[1].indexOf(totalRegiones);
+    data[1].splice(indexTotal, 1);
 
     // Add listeners to form objects
     addListeners();
@@ -127,7 +130,6 @@ Promise.all([
             state.yLabel = 'Muertes';
             state.microzona = 'Region'; // TODO: Change value of "microzona" object and lock microzona
           }
-          console.log(state)
           drawPlot();
         });
         if (escala !== null) escala.addEventListener('change', function(){
@@ -156,6 +158,8 @@ Promise.all([
 
     function drawPlot() {
 
+      console.log(state.data)
+
       datesString = state.data.columns.filter(d => d.slice(0,4) == '2020')
       dates = datesString.map(d => dateParse(d))
       state.data.forEach(function(ele){
@@ -165,7 +169,7 @@ Promise.all([
         }
       })
 
-      console.log(state, dates)
+      // console.log(state, dates)
 
       xScale.domain(d3.extent(dates))
       xAxis.scale(xScale)
