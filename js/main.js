@@ -72,6 +72,22 @@ Promise.all([
     d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto14/FallecidosCumulativo.csv')
 ]).then(function(data) {
 
+    // Calculate region population
+    data[0].forEach(function(ele){
+      ele.Poblacion = +ele.Poblacion;
+    })
+    console.log(data[0])
+    var labelsRegiones = new Set(data[0].map(d => d.Region));
+    var labelsArray = [...labelsRegiones];
+    var labelsOutput = {};
+    for (let label of labelsArray){
+      console.log(data[0].filter(d => d.Region == label))
+      let poblacionRegion = data[0].filter(d => d.Region == label).reduce(function(a,b){
+        return a + b.Poblacion;
+      }, 0);
+      labelsOutput[label] = poblacionRegion;
+    }
+
     // Add listeners to form objects
     addListeners();
     drawPlot();
@@ -144,7 +160,6 @@ Promise.all([
       dates = datesString.map(d => dateParse(d))
       state.data.forEach(function(ele){
         ele.values = datesString.map(d => +ele[d]);
-        ele.Poblacion = +ele.Poblacion;
       })
 
       console.log(state, dates)
