@@ -160,6 +160,9 @@ Promise.all([
       dates = datesString.map(d => dateParse(d))
       state.data.forEach(function(ele){
         ele.values = datesString.map(d => +ele[d]);
+        if (state.microzona == 'Region') {
+          ele["Poblacion"] = labelsOutput[ele.Region];
+        }
       })
 
       console.log(state, dates)
