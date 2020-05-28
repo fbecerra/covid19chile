@@ -339,7 +339,7 @@ Promise.all([
             .range([height - margin.bottom, margin.top])
             .domain([1, d3.max(state.data, d => d3.max(d.values)) + 1])
         yAxis.scale(yScale)
-            .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000])
+            .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
             // .ticks(2)
             .tickFormat(d3.format('i'))
         line.y(d => yScale(d + 1));
@@ -347,7 +347,8 @@ Promise.all([
         yScale = d3.scaleLinear()
             .range([height - margin.bottom, margin.top])
             .domain([0, d3.max(state.data, d => d3.max(d.values))]).nice()
-        yAxis.scale(yScale);
+        yAxis.scale(yScale)
+            .tickValues(d3.range(0, yScale.domain()[1] + 500, 500));
         line.y(d => yScale(d));
       }
 
