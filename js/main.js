@@ -51,8 +51,8 @@ var gYAxis = g.append("g")
     .attr("transform", "translate(" + margin.left + ",0)");
 
 var xAxis = d3.axisBottom()
-            .tickFormat(d3.timeFormat("%d/%m"))
-            // .ticks(dates.length)
+            .tickFormat(d3.timeFormat("%B %d"))
+            .ticks(d3.timeWeek.every(1))
             .tickSizeOuter(0);
 var yAxis = d3.axisLeft();
 
@@ -180,7 +180,7 @@ Promise.all([
 
       xScale.domain(d3.extent(dates))
       xAxis.scale(xScale)
-        .ticks(dates.length);
+        // .ticks(dates.length);
 
       yScale = d3.scaleLinear()
           .range([height - margin.bottom, margin.top])
