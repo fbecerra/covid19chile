@@ -180,7 +180,6 @@ Promise.all([
 
       xScale.domain(d3.extent(dates))
       xAxis.scale(xScale)
-        // .ticks(dates.length);
 
       yScale = d3.scaleLinear()
           .range([height - margin.bottom, margin.top])
@@ -273,7 +272,13 @@ Promise.all([
           const i1 = d3.bisectLeft(dates, xm, 1);
           const i0 = i1 - 1;
           const i = xm - dates[i0] > dates[i1] - xm ? i1 : i0;
-          const s = d3.least(state.data, d => Math.abs(d.values[i] - ym));
+          var s;
+          if (state.escala === "escala-logaritmica"){
+            s = d3.least(state.data, d => Math.abs(d.values[i] - ym + 1));
+          } else if (state.escala === "escala-lineal") {
+            s = d3.least(state.data, d => Math.abs(d.values[i] - ym));
+          }
+
           // console.log(s)
           d3.selectAll(".curve")
               .attr("opacity", 0.5)
@@ -283,8 +288,20 @@ Promise.all([
             .attr("stroke", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
           path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
           dot.attr("fill", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
-            .attr("transform", `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i])+margin.top})`);
-          dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
+            .attr("transform", function(d){
+              if (state.escala === "escala-logaritmica"){
+                return `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
+              } else if (state.escala === "escala-lineal") {
+                return `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i])+margin.top})`;
+              }
+            });
+
+          if (state.escala === "escala-logaritmica"){
+            dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
+          } else if (state.escala === "escala-lineal") {
+            dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
+          }
+
         }
 
         function entered() {
