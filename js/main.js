@@ -7,8 +7,6 @@ var plot = d3.select("#plot")
     .attr("height", plotHeight);
 
 var margin = {top: 50, right: 80, bottom: 50, left: 50},
-    // width = window.innerWidth - margin.left - margin.right, // Use the window's width
-    // height = window.innerHeight - margin.top - margin.bottom; // Use the window's height
     width = plotWidth - margin.left - margin.right,
     height = plotHeight - margin.top - margin.bottom;
 
@@ -67,13 +65,6 @@ dot.append("text")
     .attr("font-size", 10)
     .attr("text-anchor", "middle")
     .attr("y", -8);
-
-// var curves = g.append("g")
-//     .attr("fill", "none")
-//     .attr("stroke-width", 1.5)
-//     .attr("stroke-linejoin", "round")
-//     .attr("stroke-linecap", "round")
-//     .selectAll("path")
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -225,18 +216,6 @@ Promise.all([
         // .attr("stroke", "lightgray")
         .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
         .attr("d", d => line(d.values))
-        // .on("mouseover", function(){
-        //   d3.selectAll(".curve")
-        //     .attr("opacity", 0.5)
-        //     .attr("stroke","lightgray")
-        //   d3.select(this).attr("opacity", 1.0)
-        //     .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
-        // })
-        // .on('mouseleave', function(){
-        //   d3.selectAll(".curve")
-        //     .attr("opacity", 0.8)
-        //     .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
-        // });
 
       path.attr("fill", "none")
         .attr("stroke-width", 1.5)
