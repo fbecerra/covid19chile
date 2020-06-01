@@ -43,12 +43,12 @@ var svg = plot.append("svg")
 var g = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var gXAxis = g.append("g")
+var gXAxis = svg.append("g")
     .attr("class", "x axis")
-    .attr("transform", "translate(0," + (height - margin.top) + ")");
-var gYAxis = g.append("g")
+    .attr("transform", "translate(" + margin.left + "," + height + ")");
+var gYAxis = svg.append("g")
     .attr("class", "y axis")
-    .attr("transform", "translate(" + margin.left + ",0)");
+    .attr("transform", "translate(" + (2 * margin.left) + "," + margin.top + ")")
 
 var xAxis = d3.axisBottom()
             .tickFormat(d3.timeFormat("%B %d"))
@@ -56,12 +56,24 @@ var xAxis = d3.axisBottom()
             .tickSizeOuter(0);
 var yAxis = d3.axisLeft();
 
-var curves = g.append("g")
-    .attr("fill", "none")
-    .attr("stroke-width", 1.5)
-    .attr("stroke-linejoin", "round")
-    .attr("stroke-linecap", "round")
-    .selectAll("path")
+var dot = svg.append("g")
+    .attr("display", "none");
+
+dot.append("circle")
+    .attr("r", 2.5);
+
+dot.append("text")
+    .attr("font-family", "sans-serif")
+    .attr("font-size", 10)
+    .attr("text-anchor", "middle")
+    .attr("y", -8);
+
+// var curves = g.append("g")
+//     .attr("fill", "none")
+//     .attr("stroke-width", 1.5)
+//     .attr("stroke-linejoin", "round")
+//     .attr("stroke-linecap", "round")
+//     .selectAll("path")
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -198,18 +210,8 @@ Promise.all([
         .attr("font-weight", "bold")
         .text("Casos Totales"));
 
-      var path = g.selectAll("path").data(state.data)
-
-      path.attr("fill", "none")
-        .attr("stroke-width", 1.5)
-        .attr("stroke-linejoin", "round")
-        .attr("stroke-linecap", "round")
-        .style("mix-blend-mode", "multiply")
-        .attr("opacity", 0.8)
-        .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
-        // .attr("stroke", "lightgray")
-        .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
-        .attr("d", d => line(d.values))
+      var path = g.selectAll("path").data(state.data);
+      console.log(state.data)
 
       path.enter().append("path")
       // .join("path")
@@ -236,9 +238,20 @@ Promise.all([
         //     .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
         // });
 
+      path.attr("fill", "none")
+        .attr("stroke-width", 1.5)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .style("mix-blend-mode", "multiply")
+        .attr("opacity", 0.8)
+        .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
+        // .attr("stroke", "lightgray")
+        .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
+        .attr("d", d => line(d.values))
+
       path.exit().remove()
 
-      svg.call(hover, curves)
+      svg.call(hover, g.selectAll("curve"))
 
       function hover(svg, path) {
 
@@ -251,18 +264,6 @@ Promise.all([
             .on("mousemove", moved)
             .on("mouseenter", entered)
             .on("mouseleave", left);
-
-        const dot = svg.append("g")
-            .attr("display", "none");
-
-        dot.append("circle")
-            .attr("r", 2.5);
-
-        dot.append("text")
-            .attr("font-family", "sans-serif")
-            .attr("font-size", 10)
-            .attr("text-anchor", "middle")
-            .attr("y", -8);
 
         function moved() {
           d3.event.preventDefault();
