@@ -34,6 +34,8 @@ var yLogScale = d3.scaleLog()
 var line = d3.line()
     .curve(d3.curveMonotoneX);
 
+var transition = 500;
+
 var svg = plot.append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -65,6 +67,15 @@ dot.append("text")
     .attr("font-size", 10)
     .attr("text-anchor", "middle")
     .attr("y", -8);
+
+var label = svg.append("g")
+    .attr("display", "none")
+
+label.append("text")
+    .attr("font-family", "sans-serif")
+    .attr("font-size", 10)
+    .attr("text-anchor", "middle")
+    .attr("text-anchor", "start")
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -179,7 +190,7 @@ Promise.all([
         ele.values = datesString.map(d => +ele[d]/factor);
       })
 
-      // console.log(state, dates)
+      // console.log(state.data)
 
       xScale.domain(d3.extent(dates))
       xAxis.scale(xScale)
@@ -206,6 +217,8 @@ Promise.all([
 
       path.enter().append("path")
       // .join("path")
+        .transition()
+        .duration(transition)
         .attr("fill", "none")
         .attr("stroke-width", 1.5)
         .attr("stroke-linejoin", "round")
@@ -217,7 +230,9 @@ Promise.all([
         .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
         .attr("d", d => line(d.values))
 
-      path.attr("fill", "none")
+      path.transition()
+        .duration(transition)
+        .attr("fill", "none")
         .attr("stroke-width", 1.5)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
@@ -261,12 +276,16 @@ Promise.all([
 
           // console.log(s)
           d3.selectAll(".curve")
-              .attr("opacity", 0.5)
-              .attr("stroke","lightgray")
+            .attr("opacity", 0.5)
+            .attr("stroke","lightgray")
+
           d3.select(".curve."+nameNoSpaces(s[state.microzona]))
             .attr("opacity", 1.0)
             .attr("stroke", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
+
           path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
+
+          // Circle showing value
           dot.attr("fill", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
             .attr("transform", function(d){
               if (state.escala === "escala-logaritmica"){
@@ -282,11 +301,19 @@ Promise.all([
             dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
           }
 
+          // Label
+          label.attr("fill", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
+            .attr("transform", function(d){
+              return `translate(${xScale(dates[dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1])+margin.top+2})`;
+            })
+          label.select("text").text(s[state.microzona])
+
         }
 
         function entered() {
           path.style("mix-blend-mode", null).attr("stroke", "#ddd");
           dot.attr("display", null);
+          label.attr("display", null);
         }
 
         function left() {
@@ -295,6 +322,7 @@ Promise.all([
               .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
           path.style("mix-blend-mode", "multiply").attr("stroke", null);
           dot.attr("display", "none");
+          label.attr("display", "none");
         }
       }
 
