@@ -1,5 +1,6 @@
 
-var plotWidth = d3.select("#left-col").node().getBoundingClientRect().width,
+var plotWidth = d3.select("#middle-col").node().getBoundingClientRect().width,
+// var plotWidth = window.innerWidth * 0.6;
     plotHeight = window.innerHeight * 0.8;
 
 var plot = d3.select("#plot")
@@ -12,6 +13,8 @@ var margin = {top: 50, right: 80, bottom: 50, left: 50},
 
 var dateParse = d3.timeParse("%Y-%m-%d");
 
+var colors = ["#EFB605", "#E58903", "#E01A25", "#C20049", "#991C71", "#66489F", "#2074A0", "#10A66E", "#7EB852"]
+
 var state = {
       indicador: null,
       cantidad: null,
@@ -22,6 +25,7 @@ var state = {
       data: null,
       dates: null,
       yLabel: null,
+      currentColor: 0,
     }
 
 var xScale = d3.scaleTime()
@@ -238,8 +242,8 @@ Promise.all([
         .style("mix-blend-mode", "multiply")
         .attr("opacity", 0.8)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
-        // .attr("stroke", "lightgray")
-        .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
+        .attr("stroke", "lightgray")
+        // .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
         .attr("d", d => line(d.values))
 
       path.transition()
@@ -251,8 +255,8 @@ Promise.all([
         .style("mix-blend-mode", "multiply")
         .attr("opacity", 0.8)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
-        // .attr("stroke", "lightgray")
-        .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
+        .attr("stroke", "lightgray")
+        // .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
         .attr("d", d => line(d.values))
 
       path.exit().remove()
@@ -293,12 +297,13 @@ Promise.all([
 
           d3.select(".curve."+nameNoSpaces(s[state.microzona]))
             .attr("opacity", 1.0)
-            .attr("stroke", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
+            .attr("stroke", colors[state.currentColor])
+            .attr("stroke-width", 2.0)
 
           path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
 
           // Circle showing value
-          dot.attr("fill", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
+          dot.attr("fill", colors[state.currentColor])
             .attr("transform", function(d){
               if (state.escala == "escala-logaritmica"){
                 return `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
@@ -314,7 +319,7 @@ Promise.all([
           }
 
           // Label
-          label.attr("fill", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
+          label.attr("fill", colors[state.currentColor])
             .attr("transform", function(d){
               return `translate(${xScale(dates[dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1])+margin.top+2})`;
             })
@@ -331,7 +336,8 @@ Promise.all([
         function left() {
           d3.selectAll(".curve")
               .attr("opacity", 0.8)
-              .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
+              .attr("stroke", "lightgray")
+              .attr("stroke-width", 1.0)
           path.style("mix-blend-mode", "multiply").attr("stroke", null);
           dot.attr("display", "none");
           label.attr("display", "none");
