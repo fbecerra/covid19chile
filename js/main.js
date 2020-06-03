@@ -195,13 +195,25 @@ Promise.all([
       xScale.domain(d3.extent(dates))
       xAxis.scale(xScale)
 
-      yScale = d3.scaleLinear()
-          .range([height - margin.bottom, margin.top])
-          .domain([0, d3.max(state.data, d => d3.max(d.values))]).nice()
-      yAxis.scale(yScale);
-
-      line.x((d, i) => xScale(dates[i]))
-        .y(d => yScale(d))
+      if (state.escala == "escala-logaritmica"){
+        yScale = d3.scaleLog()
+            .range([height - margin.bottom, margin.top])
+            .domain([1, d3.max(state.data, d => d3.max(d.values)) + 1])
+        yAxis.scale(yScale)
+            .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
+            // .ticks(2)
+            .tickFormat(d3.format('i'))
+        line.x((d, i) => xScale(dates[i]))
+          .y(d => yScale(d + 1));
+      } else if (state.escala == "escala-lineal") {
+        yScale = d3.scaleLinear()
+            .range([height - margin.bottom, margin.top])
+            .domain([0, d3.max(state.data, d => d3.max(d.values))]).nice()
+        yAxis.scale(yScale)
+            .tickValues(d3.range(0, yScale.domain()[1] + 500, 500));
+        line.x((d, i) => xScale(dates[i]))
+          .y(d => yScale(d));
+      }
 
       gXAxis.call(xAxis);
       gYAxis.call(yAxis)
@@ -268,9 +280,9 @@ Promise.all([
           const i0 = i1 - 1;
           const i = xm - dates[i0] > dates[i1] - xm ? i1 : i0;
           var s;
-          if (state.escala === "escala-logaritmica"){
+          if (state.escala == "escala-logaritmica"){
             s = d3.least(state.data, d => Math.abs(d.values[i] - ym + 1));
-          } else if (state.escala === "escala-lineal") {
+          } else if (state.escala == "escala-lineal") {
             s = d3.least(state.data, d => Math.abs(d.values[i] - ym));
           }
 
@@ -288,16 +300,16 @@ Promise.all([
           // Circle showing value
           dot.attr("fill", d => d3.interpolateViridis(d3.max(s.values, e => e)/yScale.domain()[1]))
             .attr("transform", function(d){
-              if (state.escala === "escala-logaritmica"){
+              if (state.escala == "escala-logaritmica"){
                 return `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
-              } else if (state.escala === "escala-lineal") {
+              } else if (state.escala == "escala-lineal") {
                 return `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i])+margin.top})`;
               }
             });
 
-          if (state.escala === "escala-logaritmica"){
+          if (state.escala == "escala-logaritmica"){
             dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
-          } else if (state.escala === "escala-lineal") {
+          } else if (state.escala == "escala-lineal") {
             dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
           }
 
@@ -357,25 +369,6 @@ Promise.all([
       // })
 
       // Update yAxis scale
-
-
-      if (state.escala === "escala-logaritmica"){
-        yScale = d3.scaleLog()
-            .range([height - margin.bottom, margin.top])
-            .domain([1, d3.max(state.data, d => d3.max(d.values)) + 1])
-        yAxis.scale(yScale)
-            .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
-            // .ticks(2)
-            .tickFormat(d3.format('i'))
-        line.y(d => yScale(d + 1));
-      } else if (state.escala === "escala-lineal") {
-        yScale = d3.scaleLinear()
-            .range([height - margin.bottom, margin.top])
-            .domain([0, d3.max(state.data, d => d3.max(d.values))]).nice()
-        yAxis.scale(yScale)
-            .tickValues(d3.range(0, yScale.domain()[1] + 500, 500));
-        line.y(d => yScale(d));
-      }
 
       d3.select("g.axis.y")
         .transition(200)
