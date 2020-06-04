@@ -27,6 +27,8 @@ var state = {
       currentColor: 0,
     }
 
+var lineOpacity = 0.8;
+
 var xScale = d3.scaleTime()
     .range([margin.left, width - margin.right])
 var yScale;
@@ -58,7 +60,7 @@ var yLabel = gYAxis.append("g")
     .attr("class", "y title")
 
 var xAxis = d3.axisBottom()
-            .tickFormat(d3.timeFormat("%B %d"))
+            .tickFormat(d3.timeFormat("%d %B"))
             .ticks(d3.timeWeek.every(1))
             .tickSizeOuter(0);
 var yAxis = d3.axisLeft();
@@ -85,8 +87,10 @@ label.append("text")
     .attr("text-anchor", "middle")
     .attr("text-anchor", "start")
 
-var datalist = d3.select("#microzonas");
-var searchText = d3.select("#search-text")
+var datalist = d3.select("#microzonas"),
+    searchText = d3.select("#search-text"),
+    searchButton = d3.select("search-button");
+
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -275,7 +279,7 @@ Promise.all([
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
         .style("mix-blend-mode", "multiply")
-        .attr("opacity", 0.8)
+        .attr("opacity", lineOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
         .attr("stroke", "lightgray")
         // .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
@@ -288,7 +292,7 @@ Promise.all([
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
         .style("mix-blend-mode", "multiply")
-        .attr("opacity", 0.8)
+        .attr("opacity", lineOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
         .attr("stroke", "lightgray")
         // .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
@@ -370,7 +374,7 @@ Promise.all([
 
         function left() {
           d3.selectAll(".curve")
-              .attr("opacity", 0.8)
+              .attr("opacity", lineOpacity)
               .attr("stroke", "lightgray")
               .attr("stroke-width", 1.0)
           path.style("mix-blend-mode", "multiply").attr("stroke", null);
