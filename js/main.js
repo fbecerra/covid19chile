@@ -86,6 +86,7 @@ label.append("text")
     .attr("text-anchor", "start")
 
 var datalist = d3.select("#microzonas");
+var searchText = d3.select("#search-text")
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -232,6 +233,8 @@ Promise.all([
       // Get microzona labels
       var microzonaLabels = new Set(state.data.map(d => d[state.microzona]))
       microzonaLabels = [...microzonaLabels].sort()
+
+      searchText.html("Selecciona una " + state.microzona.toLowerCase() + ":")
 
       var options = datalist.selectAll("option").data(microzonaLabels);
 
