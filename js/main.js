@@ -1,6 +1,5 @@
 
 var plotWidth = d3.select("#middle-col").node().getBoundingClientRect().width,
-// var plotWidth = window.innerWidth * 0.6;
     plotHeight = window.innerHeight * 0.8;
 
 var plot = d3.select("#plot")
@@ -54,6 +53,10 @@ var gYAxis = svg.append("g")
     .attr("class", "y axis")
     .attr("transform", "translate(" + (2 * margin.left) + "," + margin.top + ")")
 
+var yLabel = gYAxis.append("g")
+    .append("text")
+    .attr("class", "y title")
+
 var xAxis = d3.axisBottom()
             .tickFormat(d3.timeFormat("%B %d"))
             .ticks(d3.timeWeek.every(1))
@@ -77,12 +80,19 @@ var label = svg.append("g")
 
 label.append("text")
     .attr("font-family", "sans-serif")
-    .attr("font-size", 10)
+    .attr("font-size", 12)
+    .attr("class", "curve-label")
     .attr("text-anchor", "middle")
     .attr("text-anchor", "start")
 
+var datalist = d3.select("#microzonas");
+
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
+}
+
+var capitalize = function(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 Promise.all([
@@ -133,32 +143,32 @@ Promise.all([
 
         if (state.indicador == 'casos') {
           state.data = data[0];
-          state.yLabel = 'Casos'
         } else if (state.indicador == 'muertes') {
           state.data = data[1];
-          state.yLabel = 'Muertes'
         }
+        state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
 
         // if (series_pk !== null) series_pk.addEventListener('change', changeSeries);
         if (indicador !== null) indicador.addEventListener('change', function(){
           state.indicador = indicador.value;
           if (state.indicador == 'casos') {
             state.data = data[0];
-            state.yLabel = 'Casos';
             state.microzona = 'Comuna';
           } else if (state.indicador == 'muertes') {
             state.data = data[1];
-            state.yLabel = 'Muertes';
             state.microzona = 'Region'; // TODO: Change value of "microzona" object and lock microzona
           }
+          state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
           drawPlot();
         });
         if (unidad !== null) unidad.addEventListener('change', function(){
           state.unidad = unidad.value;
+          state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
           drawPlot();
         });
         if (escala !== null) escala.addEventListener('change', function(){
           state.escala = escala.value;
+          state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
           drawPlot();
         });
         // if (colorby !== null) colorby.addEventListener('change', function(){
@@ -219,17 +229,39 @@ Promise.all([
           .y(d => yScale(d));
       }
 
+      // Get microzona labels
+      // var microzonaLabels = new Set(state.data.map(d => d[state.microzona]))
+      // microzonaLabels = [...microzonaLabels].sort()
+      //
+      // var options = datalist.selectAll("option").data(microzonaLabels);
+      //
+      // options.enter().append("option")
+      //   .html(d => d);
+      //
+      // options.html(d => d);
+      //
+      // options.exit().remove();
+
       gXAxis.call(xAxis);
-      gYAxis.call(yAxis)
-        .call(g => g.select(".domain").remove())
-        .call(g => g.select(".tick:last-of-type text").clone()
-        .attr("x", 3)
-        .attr("text-anchor", "start")
-        .attr("font-weight", "bold")
-        .text("Casos Totales"));
+      gYAxis.call(yAxis);
+
+      // gYAxis.select(".domain").remove()
+      gYAxis.select(".y.title")
+      	.attr("text-anchor", "end")
+      	// .style("font-size", (mobileScreen ? 8 : 12) + "px")
+        .style("font-size", "12px")
+        .attr("fill", "black")
+      	.attr("transform", "translate(18, 55) rotate(-90)")
+      	.text(state.yLabel);
+
+      // gYAxis.select(".tick:last-of-type text").clone()
+      //   .attr("x", 3)
+      //   .attr("text-anchor", "start")
+      //   .attr("font-weight", "bold")
+      //   .text(capitalize(state.indicador) + " " + state.cantidad + " " + state.unidad);
 
       var path = g.selectAll("path").data(state.data);
-      console.log(state.data)
+      // console.log(state.data)
 
       path.enter().append("path")
       // .join("path")
