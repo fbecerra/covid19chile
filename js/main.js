@@ -230,17 +230,17 @@ Promise.all([
       }
 
       // Get microzona labels
-      // var microzonaLabels = new Set(state.data.map(d => d[state.microzona]))
-      // microzonaLabels = [...microzonaLabels].sort()
-      //
-      // var options = datalist.selectAll("option").data(microzonaLabels);
-      //
-      // options.enter().append("option")
-      //   .html(d => d);
-      //
-      // options.html(d => d);
-      //
-      // options.exit().remove();
+      var microzonaLabels = new Set(state.data.map(d => d[state.microzona]))
+      microzonaLabels = [...microzonaLabels].sort()
+
+      var options = datalist.selectAll("option").data(microzonaLabels);
+
+      options.enter().append("option")
+        .html(d => d);
+
+      options.html(d => d);
+
+      options.exit().remove();
 
       gXAxis.call(xAxis);
       gYAxis.call(yAxis);
