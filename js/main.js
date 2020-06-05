@@ -316,42 +316,45 @@ Promise.all([
 
       path.exit().remove()
 
-      var selectedText = g.selectAll(".selected-text").data(state.selected);
-      console.log(selectedText)
+      updateLabels();
 
-      selectedText.enter().append("text")
-        .attr("class", "selected-text")
-        .attr("font-family", "sans-serif")
-        .attr("font-size", 12)
-        .attr("text-anchor", "start")
-        .attr("stroke", (d, i) => colors[i])
-        .attr("transform", function(d){
-          let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
-          let idxDate = state.dates.length - 1,
-              idxData = curveData.values.length - 1;
-          if (state.escala == "escala-logaritmica"){
-            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
-          } else if (state.escala == "escala-lineal") {
-            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
-          }
-        })
-        .text(d => d)
+      function updateLabels() {
+        var selectedText = g.selectAll(".selected-text").data(state.selected);
+        console.log(selectedText)
 
-      selectedText.attr("stroke", (d, i) => colors[i])
-        .attr("transform", function(d){
-          let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
-          let idxDate = state.dates.length - 1,
-              idxData = curveData.values.length - 1;
-          if (state.escala == "escala-logaritmica"){
-            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
-          } else if (state.escala == "escala-lineal") {
-            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
-          }
-        })
-        .text(d => d)
+        selectedText.enter().append("text")
+          .attr("class", "selected-text")
+          .attr("font-family", "sans-serif")
+          .attr("font-size", 12)
+          .attr("text-anchor", "start")
+          .attr("stroke", (d, i) => colors[i])
+          .attr("transform", function(d){
+            let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
+            let idxDate = state.dates.length - 1,
+                idxData = curveData.values.length - 1;
+            if (state.escala == "escala-logaritmica"){
+              return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
+            } else if (state.escala == "escala-lineal") {
+              return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
+            }
+          })
+          .text(d => d)
 
-      selectedText.exit().remove()
+        selectedText.attr("stroke", (d, i) => colors[i])
+          .attr("transform", function(d){
+            let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
+            let idxDate = state.dates.length - 1,
+                idxData = curveData.values.length - 1;
+            if (state.escala == "escala-logaritmica"){
+              return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
+            } else if (state.escala == "escala-lineal") {
+              return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
+            }
+          })
+          .text(d => d)
 
+        selectedText.exit().remove()
+      }
 
       svg.call(hover, g.selectAll("curve"))
 
@@ -372,10 +375,12 @@ Promise.all([
             .on("touchmove", moved)
             .on("touchstart", entered)
             .on("touchend", left)
+            .on("touch", click);
         else svg
             .on("mousemove", moved)
             .on("mouseenter", entered)
-            .on("mouseleave", left);
+            .on("mouseleave", left)
+            .on("click", click);
 
         function moved() {
           d3.event.preventDefault();
@@ -409,6 +414,7 @@ Promise.all([
             .attr("opacity", 1.0)
             .attr("stroke", hoverColor)
             .attr("stroke-width", 2.0)
+
 
           // path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
 
@@ -460,6 +466,27 @@ Promise.all([
           path.style("mix-blend-mode", "multiply").attr("stroke", null);
           dot.attr("display", "none");
           label.attr("display", "none");
+        }
+
+        function click() {
+          d3.event.preventDefault();
+          const mouse = d3.mouse(this);
+          const xm = xScale.invert(mouse[0]-margin.left); // TODO: CONSTRAIN WITHIN RIGHT MARGIN
+          const ym = yScale.invert(mouse[1]-margin.top);
+          const i1 = d3.bisectLeft(state.dates, xm, 1);
+          const i0 = i1 - 1;
+          const i = xm - state.dates[i0] > state.dates[i1] - xm ? i1 : i0;
+          var s;
+          if (state.escala == "escala-logaritmica"){
+            s = d3.least(state.filteredData, d => Math.abs(d.values[i] - ym + 1));
+          } else if (state.escala == "escala-lineal") {
+            s = d3.least(state.filteredData, d => Math.abs(d.values[i] - ym));
+          }
+          const sIdx = state.selected.indexOf(s[state.microzona]);
+          if (sIdx < 0) {
+            state.selected.push(s[state.microzona])
+            updateLabels();
+          }
         }
       }
 
