@@ -1,18 +1,18 @@
+.title {
+  display: block;
+  text-align: center;
+}
+
 #plot{
-  height: 80vh;
+  height: 90vh;
 }
 
-#text-description{
+#text-description, #search, #searched {
   margin-left: 50px;
   margin-right: 50px;
   margin-top: 50px;
 }
 
-#search {
-  margin-left: 50px;
-  margin-right: 50px;
-  margin-top: 50px;
-}
 
 .form-inline {
   margin: 0 5px;

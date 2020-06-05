@@ -10,11 +10,14 @@
 	<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
+	<div class="row title">
+		<header>
+			<h2>Visualizador de datos Covid-19 en Chile</h2>
+			<h5>Por Fernando Becerra</h5>
+		</header>
+	</div>
 	<div class="row">
-		<div class="col-2" id="left-col">
-		</div>
-		<div class="col-8" id="middle-col">
+		<div class="col-4" id="left-col">
 			<div class="row" id="text-description">
 				Este gráfico muestra el número de
 				<form class="form-inline">
@@ -70,17 +73,16 @@
 				</form>
 			</div>
 			<div class="row" id="search">
-				<div class="row">
-	 			  <input name="name" type="text" id="search-box" list="microzonas">
-	 			  <datalist id="microzonas"></datalist>
-				</div>
-				<div class="row" id="searched">
-				</div>
+				<label for="search-box" id="search-label"></label>
+ 			  <input name="name" type="text" id="search-box" list="microzonas">
+ 			  <datalist id="microzonas"></datalist>
 			</div>
-			<div class="row" id="plot">
+			<div class="row" id="searched">
 			</div>
 		</div>
-		<div class="col-2" id="right-col">
+		<div class="col-8" id="right-col">
+			<div class="row" id="plot">
+			</div>
 		</div>
 	</div>
 

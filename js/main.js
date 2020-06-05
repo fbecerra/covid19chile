@@ -1,6 +1,7 @@
 
-var plotWidth = d3.select("#middle-col").node().getBoundingClientRect().width,
-    plotHeight = window.innerHeight * 0.8;
+var plotWidth = d3.select("#right-col").node().getBoundingClientRect().width,
+    plotHeight = window.innerHeight * 0.9,
+    leftWidth = d3.select("#left-col").node().getBoundingClientRect().width;
 
 var plot = d3.select("#plot")
     .attr("width", plotWidth)
@@ -20,6 +21,7 @@ var state = {
       unidad: null,
       macrozona: null,
       microzona: null,
+      plural: null,
       escala: null,
       data: null,
       filteredData: null,
@@ -91,8 +93,9 @@ label.append("text")
     .attr("text-anchor", "start")
 
 var datalist = d3.select("#microzonas"),
-    searchBox = d3.select("#search-box").style("width", width+"px"),
-    searched = d3.select("#searched");
+    searchBox = d3.select("#search-box").style("width", `${leftWidth-100}px`),
+    searched = d3.select("#searched"),
+    labelSearch = d3.select("#search-label");
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -150,8 +153,10 @@ Promise.all([
 
         if (state.indicador == 'casos') {
           state.data = data[0];
+          state.plural = 's'
         } else if (state.indicador == 'muertes') {
           state.data = data[1];
+          state.plural = 'es'
         }
         state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
 
@@ -161,9 +166,11 @@ Promise.all([
           if (state.indicador == 'casos') {
             state.data = data[0];
             state.microzona = 'Comuna';
+            state.plural = 's'
           } else if (state.indicador == 'muertes') {
             state.data = data[1];
             state.microzona = 'Region'; // TODO: Change value of "microzona" object and lock microzona
+            state.plural = 'es'
           }
           state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
           drawPlot();
@@ -252,18 +259,19 @@ Promise.all([
       microzonaLabels = microzonaLabels.filter(d => state.selected.indexOf(d) < 0)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
-      searchBox.attr("placeholder", "Seleccione una " + state.microzona.toLowerCase() + " del listado")
+      labelSearch.html("Seleccione hasta 7 " + state.microzona.toLowerCase() + state.plural)
+      searchBox//.attr("placeholder", "Seleccione una " + state.microzona.toLowerCase() + " del listado")
         .on("change", function(){
-          let searchLabel = d3.select(this);
-          let searchedLabel = searchLabel.property("value");
-          let idxLabel = lowerMicrozonaLabels.indexOf(searchedLabel.toLowerCase());
+        let searchLabel = d3.select(this);
+        let searchedLabel = searchLabel.property("value");
+        let idxLabel = lowerMicrozonaLabels.indexOf(searchedLabel.toLowerCase());
 
-          if (idxLabel >= 0) {
-            state.selected.push(microzonaLabels[idxLabel]);
-            searchLabel.node().value = "";
-            drawPlot();
-          }
-        });
+        if (idxLabel >= 0) {
+          state.selected.push(microzonaLabels[idxLabel]);
+          searchLabel.node().value = "";
+          drawPlot();
+        }
+      });
 
       var options = datalist.selectAll("option").data(microzonaLabels);
 
@@ -336,7 +344,6 @@ Promise.all([
           .html(d => d)
 
         selectedBoxes.exit().remove()
-
 
         var selectedText = g.selectAll(".selected-text").data(state.selected);
         console.log(selectedText)
