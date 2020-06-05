@@ -12,11 +12,6 @@ var margin = {top: 50, right: 80, bottom: 50, left: 50},
 
 var dateParse = d3.timeParse("%Y-%m-%d");
 
-// var colors = ["#EFB605", "#E58903", "#E01A25", "#C20049", "#991C71", "#66489F", "#2074A0", "#10A66E", "#7EB852"]
-// var colors = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099",
-//              "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395",
-//              "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300",
-//              "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
 var colors = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00', '#a65628','#f781bf','#999999']
 
 var state = {
@@ -316,11 +311,47 @@ Promise.all([
         .style("mix-blend-mode", "multiply")
         .attr("opacity", lineOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
-        // .attr("stroke", "lightgray")
         .attr("stroke", curveColor)
         .attr("d", d => line(d.values))
 
       path.exit().remove()
+
+      var selectedText = g.selectAll(".selected-text").data(state.selected);
+      console.log(selectedText)
+
+      selectedText.enter().append("text")
+        .attr("class", "selected-text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 12)
+        .attr("text-anchor", "start")
+        .attr("stroke", (d, i) => colors[i])
+        .attr("transform", function(d){
+          let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
+          let idxDate = state.dates.length - 1,
+              idxData = curveData.values.length - 1;
+          if (state.escala == "escala-logaritmica"){
+            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
+          } else if (state.escala == "escala-lineal") {
+            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
+          }
+        })
+        .text(d => d)
+
+      selectedText.attr("stroke", (d, i) => colors[i])
+        .attr("transform", function(d){
+          let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
+          let idxDate = state.dates.length - 1,
+              idxData = curveData.values.length - 1;
+          if (state.escala == "escala-logaritmica"){
+            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
+          } else if (state.escala == "escala-lineal") {
+            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
+          }
+        })
+        .text(d => d)
+
+      selectedText.exit().remove()
+
 
       svg.call(hover, g.selectAll("curve"))
 
@@ -360,6 +391,11 @@ Promise.all([
           } else if (state.escala == "escala-lineal") {
             s = d3.least(state.filteredData, d => Math.abs(d.values[i] - ym));
           }
+          const sIdx = state.selected.indexOf(s[state.microzona]);
+
+          function hoverColor(){
+            return sIdx < 0 ? colors[state.selected.length] : colors[sIdx];
+          }
 
           // console.log(s)
           d3.selectAll(".curve")
@@ -371,34 +407,43 @@ Promise.all([
 
           d3.select(".curve."+nameNoSpaces(s[state.microzona]))
             .attr("opacity", 1.0)
-            .attr("stroke", colors[state.selected.length])
+            .attr("stroke", hoverColor)
             .attr("stroke-width", 2.0)
 
           // path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
 
+          dot.attr("opacity", 0.0)
+          label.attr("opacity", 0.0)
+
           // Circle showing value
-          dot.attr("fill", colors[state.selected.length])
-            .attr("transform", function(d){
-              if (state.escala == "escala-logaritmica"){
-                return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
-              } else if (state.escala == "escala-lineal") {
-                return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i])+margin.top})`;
-              }
-            });
+          if (sIdx >= 0) {
 
-          dot.select("text").text(s.values[i]);
+            dot.attr("fill", hoverColor)
+              .attr("opacity", 1.0)
+              .attr("transform", function(d){
+                if (state.escala == "escala-logaritmica"){
+                  return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
+                } else if (state.escala == "escala-lineal") {
+                  return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i])+margin.top})`;
+                }
+              });
+            dot.select("text").text(s.values[i]);
 
-          // Label
-          label.attr("fill", colors[state.selected.length])
-            .attr("transform", function(d){
-              if (state.escala == "escala-logaritmica"){
-                return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1] + 1)+margin.top+2})`;
-              } else if (state.escala == "escala-lineal") {
-                return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1])+margin.top+2})`;
-              }
-            })
-          label.select("text").text(s[state.microzona])
+          } else {
 
+            // Label
+            label.attr("fill", hoverColor)
+              .attr("opacity", 1.0)
+              .attr("transform", function(d){
+                if (state.escala == "escala-logaritmica"){
+                  return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1] + 1)+margin.top+2})`;
+                } else if (state.escala == "escala-lineal") {
+                  return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1])+margin.top+2})`;
+                }
+              })
+            label.select("text").text(s[state.microzona])
+
+          }
         }
 
         function entered() {
@@ -418,28 +463,23 @@ Promise.all([
         }
       }
 
-      // Update yAxis scale
 
-      d3.select("g.axis.y")
-        .transition(200)
-        .duration(500)
-        .call(yAxis);
 
-      var selection = d3.selectAll(".curve").data(state.filteredData)
-
-      selection.enter()
-        .append("path")
-        .transition(500)
-        .attr("d", function(d){
-          return line(d.values)
-        })
-
-      selection.transition(500)
-        .attr("d", function(d){
-          return line(d.values)
-        })
-
-      selection.exit().remove()
+      // var selection = d3.selectAll(".curve").data(state.filteredData)
+      //
+      // selection.enter()
+      //   .append("path")
+      //   .transition(500)
+      //   .attr("d", function(d){
+      //     return line(d.values)
+      //   })
+      //
+      // selection.transition(500)
+      //   .attr("d", function(d){
+      //     return line(d.values)
+      //   })
+      //
+      // selection.exit().remove()
 
     }
   })
