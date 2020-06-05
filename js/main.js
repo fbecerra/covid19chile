@@ -253,10 +253,11 @@ Promise.all([
       var options = datalist.selectAll("option").data(microzonaLabels);
 
       options.enter().append("option")
-        .on("click", console.log("hola"))
+        .on("click", d => console.log(d))
         .html(d => d);
 
-      options.html(d => d);
+      options.html(d => d)
+        .on("click", d => console.log(d));
 
       options.exit().remove();
 
@@ -272,17 +273,9 @@ Promise.all([
       	.attr("transform", "translate(18, 55) rotate(-90)")
       	.text(state.yLabel);
 
-      // gYAxis.select(".tick:last-of-type text").clone()
-      //   .attr("x", 3)
-      //   .attr("text-anchor", "start")
-      //   .attr("font-weight", "bold")
-      //   .text(capitalize(state.indicador) + " " + state.cantidad + " " + state.unidad);
-
       var path = g.selectAll("path").data(state.filteredData);
-      // console.log(state.data)
 
       path.enter().append("path")
-      // .join("path")
         .transition()
         .duration(transition)
         .attr("fill", "none")
@@ -293,7 +286,6 @@ Promise.all([
         .attr("opacity", lineOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
         .attr("stroke", "lightgray")
-        // .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
         .attr("d", d => line(d.values))
 
       path.transition()
@@ -306,7 +298,6 @@ Promise.all([
         .attr("opacity", lineOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
         .attr("stroke", "lightgray")
-        // .attr("stroke", d => d3.interpolateViridis(d3.max(d.values, e => e)/yScale.domain()[1]))
         .attr("d", d => line(d.values))
 
       path.exit().remove()
@@ -362,11 +353,7 @@ Promise.all([
               }
             });
 
-          if (state.escala == "escala-logaritmica"){
-            dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
-          } else if (state.escala == "escala-lineal") {
-            dot.select("text").text(s.values[i]); // TODO: IF LOG THEN WE NEED TO SUBSTRACT ONE
-          }
+          dot.select("text").text(s.values[i]);
 
           // Label
           label.attr("fill", colors[state.currentColor])
@@ -398,36 +385,6 @@ Promise.all([
         }
       }
 
-
-      // state.data.forEach(function(ele){
-      //
-      //
-      //   texts.attr("x", width - margin.left/2 - margin.right/2)
-      //     .attr("y", yScale(datos[datos.length-1].y) + 5)
-      //     .attr("fill", d3.interpolateViridis(datos[datos.length-1].y/yScale.domain()[1]))
-      //     .attr("class", "name "+nameNoSpaces(ele[state.microzona]))
-      //     // .attr("opacity", 0.5)
-      //     .attr("text-anchor", "start")
-      //     .attr("font-size", "1rem")
-      //     // .attr("font-weight", "bold")
-      //     .on("mouseover", function(){
-      //       d3.selectAll(".curve")
-      //         .attr("opacity", 0.2)
-      //       d3.select(".curve."+nameNoSpaces(ele[state.microzona])).attr("opacity", 1.0)
-      //
-      //       d3.selectAll(".name")
-      //         .attr("opacity", 0.2)
-      //       d3.select(".name."+nameNoSpaces(ele[state.microzona])).attr("opacity", 1.0)
-      //     })
-      //     .on('mouseleave', function(){
-      //       d3.selectAll(".curve")
-      //         .attr("opacity", 1.0)
-      //
-      //       d3.selectAll(".name")
-      //         .attr("opacity", 1.0)
-      //     });
-      // })
-
       // Update yAxis scale
 
       d3.select("g.axis.y")
@@ -451,10 +408,6 @@ Promise.all([
 
       selection.exit().remove()
 
-
-      // texts.transition()
-      //   .duration(500)
-      //   .attr("y", 0)
     }
   })
   .catch(function(error){
