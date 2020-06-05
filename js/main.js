@@ -91,7 +91,6 @@ label.append("text")
     .attr("text-anchor", "start")
 
 var datalist = d3.select("#microzonas"),
-    // searchButton = d3.select("search-button"),
     searchBox = d3.select("#search-box").style("width", width+"px"),
     searched = d3.select("#searched");
 
@@ -318,7 +317,27 @@ Promise.all([
 
       updateLabels();
 
+      svg.call(hover, g.selectAll("curve"))
+
       function updateLabels() {
+
+        var selectedBoxes = searched.selectAll(".searched-term").data(state.selected);
+
+        selectedBoxes.enter().append("div")
+          .attr("class", d => "searched-term "+nameNoSpaces(d))
+          .attr("fill", (d, i) => colors[i])
+          .on("click", removeLabel)
+          .html(d => d)
+
+        selectedBoxes
+          .attr("class", d => "searched-term "+nameNoSpaces(d))
+          .attr("fill", (d, i) => colors[i])
+          .on("click", removeLabel)
+          .html(d => d)
+
+        selectedBoxes.exit().remove()
+
+
         var selectedText = g.selectAll(".selected-text").data(state.selected);
         console.log(selectedText)
 
@@ -356,7 +375,11 @@ Promise.all([
         selectedText.exit().remove()
       }
 
-      svg.call(hover, g.selectAll("curve"))
+      function removeLabel(d) {
+        state.selected = state.selected.filter(e => d != e);
+        label.attr("opacity", 0.0);
+        drawPlot();
+      }
 
       function curveColor(d) {
         let idx = state.selected.indexOf(d[state.microzona]);
