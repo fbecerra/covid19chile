@@ -12,7 +12,11 @@ var margin = {top: 50, right: 80, bottom: 50, left: 50},
 
 var dateParse = d3.timeParse("%Y-%m-%d");
 
-var colors = ["#EFB605", "#E58903", "#E01A25", "#C20049", "#991C71", "#66489F", "#2074A0", "#10A66E", "#7EB852"]
+// var colors = ["#EFB605", "#E58903", "#E01A25", "#C20049", "#991C71", "#66489F", "#2074A0", "#10A66E", "#7EB852"]
+var colors = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099",
+             "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395",
+             "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300",
+             "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
 
 var state = {
       indicador: null,
@@ -26,6 +30,7 @@ var state = {
       dates: null,
       yLabel: null,
       currentColor: 0,
+      selected: [],
     }
 
 var lineOpacity = 0.8,
@@ -90,9 +95,9 @@ label.append("text")
     .attr("text-anchor", "start")
 
 var datalist = d3.select("#microzonas"),
-    searchText = d3.select("#search-text"),
-    searchButton = d3.select("search-button");
-
+    // searchButton = d3.select("search-button"),
+    searchBox = d3.select("#search-box").style("width", width+"px"),
+    searched = d3.select("#searched");
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -188,6 +193,8 @@ Promise.all([
 
     function drawPlot() {
 
+      console.log(state.selected)
+
       datesString = state.data.columns.filter(d => d.slice(0,4) == '2020')
       var dates = datesString.map(d => dateParse(d))
       let factor;
@@ -246,18 +253,29 @@ Promise.all([
 
       // Get microzona labels
       var microzonaLabels = new Set(state.filteredData.map(d => d[state.microzona]))
-      microzonaLabels = [...microzonaLabels].sort()
+      microzonaLabels = [...microzonaLabels].sort();
+      microzonaLabels = microzonaLabels.filter(d => state.selected.indexOf(d) < 0)
+      var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
-      searchText.html("Selecciona una " + state.microzona.toLowerCase() + ":")
+      searchBox.attr("placeholder", "Seleccione una " + state.microzona.toLowerCase() + " del listado")
+        .on("change", function(){
+          let searchLabel = d3.select(this);
+          let searchedLabel = searchLabel.property("value");
+          let idxLabel = lowerMicrozonaLabels.indexOf(searchedLabel.toLowerCase());
+
+          if (idxLabel >= 0) {
+            state.selected.push(microzonaLabels[idxLabel]);
+            searchLabel.node().value = "";
+            drawPlot();
+          }
+        });
 
       var options = datalist.selectAll("option").data(microzonaLabels);
 
       options.enter().append("option")
-        .on("click", d => console.log(d))
         .html(d => d);
 
-      options.html(d => d)
-        .on("click", d => console.log(d));
+      options.html(d => d);
 
       options.exit().remove();
 
@@ -279,30 +297,41 @@ Promise.all([
         .transition()
         .duration(transition)
         .attr("fill", "none")
-        .attr("stroke-width", 1.5)
+        .attr("stroke-width", curveWidth)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
         .style("mix-blend-mode", "multiply")
         .attr("opacity", lineOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
-        .attr("stroke", "lightgray")
+        .attr("stroke", curveColor)
         .attr("d", d => line(d.values))
 
       path.transition()
         .duration(transition)
         .attr("fill", "none")
-        .attr("stroke-width", 1.5)
+        .attr("stroke-width", curveWidth)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
         .style("mix-blend-mode", "multiply")
         .attr("opacity", lineOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
-        .attr("stroke", "lightgray")
+        // .attr("stroke", "lightgray")
+        .attr("stroke", curveColor)
         .attr("d", d => line(d.values))
 
       path.exit().remove()
 
       svg.call(hover, g.selectAll("curve"))
+
+      function curveColor(d) {
+        let idx = state.selected.indexOf(d[state.microzona]);
+        return idx < 0 ? "lightgray" : colors[idx];
+      }
+
+      function curveWidth(d) {
+        let idx = state.selected.indexOf(d[state.microzona]);
+        return idx < 0 ? 1.5 : 2.0;
+      }
 
       function hover(svg, path) {
 
@@ -333,18 +362,21 @@ Promise.all([
 
           // console.log(s)
           d3.selectAll(".curve")
-            .attr("opacity", 0.5)
-            .attr("stroke","lightgray")
+            .attr("opacity", function(d){
+              let idx = state.selected.indexOf(d[state.microzona]);
+              return idx < 0 ? 0.5 : 1.0;
+            })
+            .attr("stroke", curveColor)
 
           d3.select(".curve."+nameNoSpaces(s[state.microzona]))
             .attr("opacity", 1.0)
-            .attr("stroke", colors[state.currentColor])
+            .attr("stroke", colors[state.selected.length])
             .attr("stroke-width", 2.0)
 
-          path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
+          // path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
 
           // Circle showing value
-          dot.attr("fill", colors[state.currentColor])
+          dot.attr("fill", colors[state.selected.length])
             .attr("transform", function(d){
               if (state.escala == "escala-logaritmica"){
                 return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
@@ -356,7 +388,7 @@ Promise.all([
           dot.select("text").text(s.values[i]);
 
           // Label
-          label.attr("fill", colors[state.currentColor])
+          label.attr("fill", colors[state.selected.length])
             .attr("transform", function(d){
               if (state.escala == "escala-logaritmica"){
                 return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1] + 1)+margin.top+2})`;
@@ -377,8 +409,8 @@ Promise.all([
         function left() {
           d3.selectAll(".curve")
               .attr("opacity", lineOpacity)
-              .attr("stroke", "lightgray")
-              .attr("stroke-width", 1.0)
+              .attr("stroke", curveColor)
+              .attr("stroke-width", curveWidth)
           path.style("mix-blend-mode", "multiply").attr("stroke", null);
           dot.attr("display", "none");
           label.attr("display", "none");
