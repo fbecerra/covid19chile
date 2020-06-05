@@ -166,6 +166,11 @@ Promise.all([
           state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
           drawPlot();
         });
+        if (cantidad !== null) cantidad.addEventListener('change', function(){
+          state.cantidad = cantidad.value;
+          state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
+          drawPlot();
+        });
         if (unidad !== null) unidad.addEventListener('change', function(){
           state.unidad = unidad.value;
           state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
@@ -198,20 +203,32 @@ Promise.all([
     function drawPlot() {
 
       datesString = state.data.columns.filter(d => d.slice(0,4) == '2020')
-      dates = datesString.map(d => dateParse(d))
+      var dates = datesString.map(d => dateParse(d))
       let factor;
       state.data.forEach(function(ele){
-        if (state.unidad == 'totales') {
+
+        if (state.unidad == "totales") {
           factor = 1.0;
-        } else if (state.unidad == 'tasa'){
-          factor = ele.Poblacion/100000;
+        } else if (state.unidad == "tasa"){
+          factor = ele.Poblacion / 100000.0;
         }
-        ele.values = datesString.map(d => +ele[d]/factor);
-      })
+
+        ele.values = datesString.map(d => +ele[d] / factor);
+        if (state.cantidad == "nuevos") {
+          let newValues = ele.values.map(function(d,i){
+            return d - ele.values[i-1] >= 0 ? d - ele.values[i-1] : 0;
+          });
+          ele.values = newValues.slice(1);
+          state.dates = dates.slice(1);
+        } else if (state.cantidad == "acumulados") {
+          state.dates = dates;
+        }
+
+      });
 
       // console.log(state.data)
 
-      xScale.domain(d3.extent(dates))
+      xScale.domain(d3.extent(state.dates))
       xAxis.scale(xScale)
 
       if (state.escala == "escala-logaritmica"){
@@ -222,7 +239,7 @@ Promise.all([
             .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
             // .ticks(2)
             .tickFormat(d3.format('i'))
-        line.x((d, i) => xScale(dates[i]))
+        line.x((d, i) => xScale(state.dates[i]))
           .y(d => yScale(d + 1));
       } else if (state.escala == "escala-lineal") {
         yScale = d3.scaleLinear()
@@ -230,7 +247,7 @@ Promise.all([
             .domain([0, d3.max(state.data, d => d3.max(d.values))]).nice()
         yAxis.scale(yScale)
             .tickValues(d3.range(0, yScale.domain()[1] + 500, 500));
-        line.x((d, i) => xScale(dates[i]))
+        line.x((d, i) => xScale(state.dates[i]))
           .y(d => yScale(d));
       }
 
@@ -243,6 +260,7 @@ Promise.all([
       var options = datalist.selectAll("option").data(microzonaLabels);
 
       options.enter().append("option")
+        .on("click", console.log("hola"))
         .html(d => d);
 
       options.html(d => d);
@@ -319,9 +337,9 @@ Promise.all([
           const mouse = d3.mouse(this);
           const xm = xScale.invert(mouse[0]-margin.left); // TODO: CONSTRAIN WITHIN RIGHT MARGIN
           const ym = yScale.invert(mouse[1]-margin.top);
-          const i1 = d3.bisectLeft(dates, xm, 1);
+          const i1 = d3.bisectLeft(state.dates, xm, 1);
           const i0 = i1 - 1;
-          const i = xm - dates[i0] > dates[i1] - xm ? i1 : i0;
+          const i = xm - state.dates[i0] > state.dates[i1] - xm ? i1 : i0;
           var s;
           if (state.escala == "escala-logaritmica"){
             s = d3.least(state.data, d => Math.abs(d.values[i] - ym + 1));
@@ -345,9 +363,9 @@ Promise.all([
           dot.attr("fill", colors[state.currentColor])
             .attr("transform", function(d){
               if (state.escala == "escala-logaritmica"){
-                return `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
+                return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
               } else if (state.escala == "escala-lineal") {
-                return `translate(${xScale(dates[i])+margin.left},${yScale(s.values[i])+margin.top})`;
+                return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i])+margin.top})`;
               }
             });
 
@@ -360,7 +378,7 @@ Promise.all([
           // Label
           label.attr("fill", colors[state.currentColor])
             .attr("transform", function(d){
-              return `translate(${xScale(dates[dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1])+margin.top+2})`;
+              return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1])+margin.top+2})`;
             })
           label.select("text").text(s[state.microzona])
 
