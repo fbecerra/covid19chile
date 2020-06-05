@@ -183,23 +183,7 @@ Promise.all([
           state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
           drawPlot();
         });
-        // if (colorby !== null) colorby.addEventListener('change', function(){
-        //   state.fields_schema.colorby.selected = colorby.value;
-        //   drawPoints();
-        // });
-        // if (hover !== null) hover.addEventListener('change', function(){
-        //   state.fields_schema.hover.selected = hover.value;
-        // });
-        // if (coords !== null) coords.addEventListener('change', function(){
-        //   if (coords.value == 't-SNE') {
-        //     state.currentCoords.x = "tSNE_X.coord.coord_tSNE.amp_RA.info.csv.9";
-        //     state.currentCoords.y = "tSNE_Y.coord.coord_tSNE.amp_RA.info.csv.9";
-        //   } else if (coords.value == 'PCA') {
-        //     state.currentCoords.x = "PC1.coord.coord_PCA.0.1.n6.info.csv.10";
-        //     state.currentCoords.y = "PC2.coord.coord_PCA.0.1.n6.info.csv.10"
-        //   }
-        //   drawPoints();
-        // });
+
     }
 
     function drawPlot() {
