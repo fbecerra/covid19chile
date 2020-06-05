@@ -22,12 +22,14 @@ var state = {
       microzona: null,
       escala: null,
       data: null,
+      filteredData: null,
       dates: null,
       yLabel: null,
       currentColor: 0,
     }
 
-var lineOpacity = 0.8;
+var lineOpacity = 0.8,
+    threshold = 10;
 
 var xScale = d3.scaleTime()
     .range([margin.left, width - margin.right])
@@ -205,6 +207,7 @@ Promise.all([
       datesString = state.data.columns.filter(d => d.slice(0,4) == '2020')
       var dates = datesString.map(d => dateParse(d))
       let factor;
+
       state.data.forEach(function(ele){
 
         if (state.unidad == "totales") {
@@ -226,6 +229,12 @@ Promise.all([
 
       });
 
+      if (state.indicador == 'casos') {
+        state.filteredData = state.data.filter(d => d.values[d.values.length - 1] > threshold);
+      } else if (state.indicador == 'muertes') {
+        state.filteredData = state.data;
+      }
+
       // console.log(state.data)
 
       xScale.domain(d3.extent(state.dates))
@@ -234,7 +243,7 @@ Promise.all([
       if (state.escala == "escala-logaritmica"){
         yScale = d3.scaleLog()
             .range([height - margin.bottom, margin.top])
-            .domain([1, d3.max(state.data, d => d3.max(d.values)) + 1])
+            .domain([1, d3.max(state.filteredData, d => d3.max(d.values)) + 1])
         yAxis.scale(yScale)
             .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
             // .ticks(2)
@@ -244,7 +253,7 @@ Promise.all([
       } else if (state.escala == "escala-lineal") {
         yScale = d3.scaleLinear()
             .range([height - margin.bottom, margin.top])
-            .domain([0, d3.max(state.data, d => d3.max(d.values))]).nice()
+            .domain([0, d3.max(state.filteredData, d => d3.max(d.values))]).nice()
         yAxis.scale(yScale)
             .tickValues(d3.range(0, yScale.domain()[1] + 500, 500));
         line.x((d, i) => xScale(state.dates[i]))
@@ -252,7 +261,7 @@ Promise.all([
       }
 
       // Get microzona labels
-      var microzonaLabels = new Set(state.data.map(d => d[state.microzona]))
+      var microzonaLabels = new Set(state.filteredData.map(d => d[state.microzona]))
       microzonaLabels = [...microzonaLabels].sort()
 
       searchText.html("Selecciona una " + state.microzona.toLowerCase() + ":")
@@ -285,7 +294,7 @@ Promise.all([
       //   .attr("font-weight", "bold")
       //   .text(capitalize(state.indicador) + " " + state.cantidad + " " + state.unidad);
 
-      var path = g.selectAll("path").data(state.data);
+      var path = g.selectAll("path").data(state.filteredData);
       // console.log(state.data)
 
       path.enter().append("path")
@@ -342,9 +351,9 @@ Promise.all([
           const i = xm - state.dates[i0] > state.dates[i1] - xm ? i1 : i0;
           var s;
           if (state.escala == "escala-logaritmica"){
-            s = d3.least(state.data, d => Math.abs(d.values[i] - ym + 1));
+            s = d3.least(state.filteredData, d => Math.abs(d.values[i] - ym + 1));
           } else if (state.escala == "escala-lineal") {
-            s = d3.least(state.data, d => Math.abs(d.values[i] - ym));
+            s = d3.least(state.filteredData, d => Math.abs(d.values[i] - ym));
           }
 
           // console.log(s)
@@ -378,7 +387,11 @@ Promise.all([
           // Label
           label.attr("fill", colors[state.currentColor])
             .attr("transform", function(d){
-              return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1])+margin.top+2})`;
+              if (state.escala == "escala-logaritmica"){
+                return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1] + 1)+margin.top+2})`;
+              } else if (state.escala == "escala-lineal") {
+                return `translate(${xScale(state.dates[state.dates.length-1])+margin.left+5},${yScale(s.values[s.values.length-1])+margin.top+2})`;
+              }
             })
           label.select("text").text(s[state.microzona])
 
@@ -438,7 +451,7 @@ Promise.all([
         .duration(500)
         .call(yAxis);
 
-      var selection = d3.selectAll(".curve").data(state.data)
+      var selection = d3.selectAll(".curve").data(state.filteredData)
 
       selection.enter()
         .append("path")
