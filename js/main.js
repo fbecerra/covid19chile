@@ -37,10 +37,6 @@ var lineOpacity = 0.8,
 var xScale = d3.scaleTime()
     .range([margin.left, width - margin.right])
 var yScale;
-var yLinearScale = d3.scaleLinear()
-    .range([height - margin.bottom, margin.top])
-var yLogScale = d3.scaleLog()
-    .range([height - margin.bottom, margin.top])
 var line = d3.line()
     .curve(d3.curveMonotoneX);
 
@@ -235,7 +231,7 @@ Promise.all([
 
       if (state.escala == "escala-logaritmica"){
         yScale = d3.scaleLog()
-            .range([height - margin.bottom, margin.top])
+            .range([height - margin.bottom, 0])
             .domain([1, d3.max(state.filteredData, d => d3.max(d.values)) + 1])
         yAxis.scale(yScale)
             .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
@@ -259,7 +255,7 @@ Promise.all([
       microzonaLabels = microzonaLabels.filter(d => state.selected.indexOf(d) < 0)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
-      labelSearch.html("Seleccione hasta 7 " + state.microzona.toLowerCase() + state.plural)
+      labelSearch.html("Puede seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar")
       searchBox//.attr("placeholder", "Seleccione una " + state.microzona.toLowerCase() + " del listado")
         .on("change", function(){
         let searchLabel = d3.select(this);
@@ -291,7 +287,7 @@ Promise.all([
       	// .style("font-size", (mobileScreen ? 8 : 12) + "px")
         .style("font-size", "12px")
         .attr("fill", "black")
-      	.attr("transform", "translate(18, 55) rotate(-90)")
+      	.attr("transform", "translate(18, 5) rotate(-90)")
       	.text(state.yLabel);
 
       var path = g.selectAll("path").data(state.filteredData);
