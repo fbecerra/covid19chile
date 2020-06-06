@@ -3,16 +3,17 @@
   text-align: center;
 }
 
-#plot{
-  height: 90vh;
-}
-
-#text-description, #search, #searched {
+#text-description, #search {
   margin-left: 50px;
   margin-right: 50px;
   margin-top: 50px;
 }
 
+#searched {
+  margin-left: 50px;
+  margin-right: 50px;
+  margin-top: 10px;
+}
 
 .form-inline {
   margin: 0 5px;
@@ -46,12 +47,31 @@
   border-bottom: 1px solid black;
 }
 
-.searched-term {
+.search-icon {
+  position: absolute;
+  /* padding: 10px; */
+  /* font-weight: 400; */
+  margin-left: -45px;
+  margin-top: 8px;
+  min-width: 50px;
+  text-align: center;
+  font-size: 24px;
+  opacity: 0.8;
+}
+
+.searched-term, #search-box {
   border: 1.5px solid;
   border-radius: 5px;
   margin: 2px;
   padding: 4px 8px;
 }
+
+/* #search-box {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-indent: 1px;
+  text-overflow: '';
+} */
 
 .delete-term {
   cursor: pointer;
