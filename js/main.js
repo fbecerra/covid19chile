@@ -197,7 +197,13 @@ Promise.all([
       var dates = datesString.map(d => dateParse(d))
       let factor;
 
-      state.data.forEach(function(ele){
+      if (state.indicador == 'casos') {
+        state.filteredData = state.data.filter(d => +d[datesString[datesString.length - 1]] >+ threshold);
+      } else {
+        state.filteredData = state.data;
+      }
+
+      state.filteredData.forEach(function(ele){
 
         if (state.unidad == "totales") {
           factor = 1.0;
@@ -217,12 +223,6 @@ Promise.all([
         }
 
       });
-
-      if (state.indicador == 'casos') {
-        state.filteredData = state.data.filter(d => d.values[d.values.length - 1] > threshold);
-      } else if (state.indicador == 'muertes') {
-        state.filteredData = state.data;
-      }
 
       // console.log(state.data)
 
@@ -443,6 +443,7 @@ Promise.all([
               return idx < 0 ? 0.5 : 1.0;
             })
             .attr("stroke", curveColor)
+            .attr("stroke-width", curveWidth)
 
           d3.select(".curve."+nameNoSpaces(s[state.microzona]))
             .attr("opacity", 1.0)
