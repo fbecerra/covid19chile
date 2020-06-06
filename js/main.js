@@ -241,7 +241,7 @@ Promise.all([
           .y(d => yScale(d + 1));
       } else if (state.escala == "escala-lineal") {
         yScale = d3.scaleLinear()
-            .range([height - margin.bottom, margin.top])
+            .range([height - margin.bottom, 0])
             .domain([0, d3.max(state.filteredData, d => d3.max(d.values))]).nice()
         yAxis.scale(yScale)
             .tickValues(d3.range(0, yScale.domain()[1] + 500, 500));
@@ -399,7 +399,7 @@ Promise.all([
 
       function curveWidth(d) {
         let idx = state.selected.indexOf(d[state.microzona]);
-        return idx < 0 ? 1.5 : 2.0;
+        return idx < 0 ? 1.5 : 2.5;
       }
 
       function hover(svg, path) {
@@ -447,7 +447,7 @@ Promise.all([
           d3.select(".curve."+nameNoSpaces(s[state.microzona]))
             .attr("opacity", 1.0)
             .attr("stroke", hoverColor)
-            .attr("stroke-width", 2.0)
+            .attr("stroke-width", 2.5)
 
 
           // path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
