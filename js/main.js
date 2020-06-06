@@ -333,15 +333,23 @@ Promise.all([
 
         selectedBoxes.enter().append("div")
           .attr("class", d => "searched-term "+nameNoSpaces(d))
-          .attr("fill", (d, i) => colors[i])
+          .style("color", (d, i) => colors[i])
+          .style("background-color", function(d, i){
+            let rgb = d3.rgb(colors[i])
+            return `rgba(${rgb.r},${rgb.g},${rgb.b},0.05)`
+          })
           .on("click", removeLabel)
-          .html(d => d)
+          .html(d => d + '<span class="delete-term"><i class="fas fa-times-circle"></i></span>')
 
         selectedBoxes
           .attr("class", d => "searched-term "+nameNoSpaces(d))
-          .attr("fill", (d, i) => colors[i])
+          .style("color", (d, i) => colors[i])
+          .style("background-color", function(d, i){
+            let rgb = d3.rgb(colors[i])
+            return `rgba(${rgb.r},${rgb.g},${rgb.b},0.05)`
+          })
           .on("click", removeLabel)
-          .html(d => d)
+          .html(d => d + '<span class="delete-term"><i class="fas fa-times-circle"></i></span>')
 
         selectedBoxes.exit().remove()
 
