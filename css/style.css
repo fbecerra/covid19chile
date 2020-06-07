@@ -27,6 +27,14 @@ body {
   color: lightgray;
 }
 
+.note p {
+  margin-bottom: 0;
+}
+
+.note a {
+  color: lightgray;
+}
+
 #searched {
   margin-left: 50px;
   margin-right: 50px;
