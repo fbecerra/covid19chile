@@ -95,6 +95,8 @@ var datalist = d3.select("#microzonas"),
     searched = d3.select("#searched"),
     labelSearch = d3.select("#search-label"),
     noteSource = d3.select("#note-source");
+
+var unidad, macrozona;
     // indicador = d3.select('#indicador'),
     // cantidad = d3.select('#cantidad'),
     // unidad = d3.select('#unidad'),
@@ -112,13 +114,14 @@ var capitalize = function(string) {
 
 Promise.all([
     d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto1/Covid-19.csv'),
-    d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto14/FallecidosCumulativo.csv')
+    d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto14/FallecidosCumulativo.csv'),
+    d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto3/CasosTotalesCumulativo.csv')
 ]).then(function(data) {
 
     prepareData();
-    // initializeOptions();
-    // updateOptions();
-    addListeners();
+    initializeOptions();
+    updateOptions();
+    // addListeners();
     filterData();
     updateAxes();
     updateSearchBox();
@@ -146,6 +149,7 @@ Promise.all([
         }, 0);
         labelsOutput[label] = poblacionRegion;
       }
+      console.log(data[0])
 
       // Delete "total" in Regiones and add Population
       let totalRegiones = data[1].filter(d => d.Region == 'Total')
@@ -154,85 +158,107 @@ Promise.all([
       data[1].forEach(function(ele){
         ele["Poblacion"] = labelsOutput[ele.Region];
       });
+
+      totalRegiones = data[2].filter(d => d.Region == 'Total')
+      indexTotal = data[2].indexOf(totalRegiones);
+      data[2].splice(indexTotal, 1);
+      data[2].forEach(function(ele){
+        ele["Poblacion"] = labelsOutput[ele.Region];
+      });
     }
 
     function initializeOptions() {
       let indicador = addOptions("indicador", ["casos", "muertes"], ["casos", "muertes"]);
       state.indicador = indicador.node().value;
-      if (state.indicador == 'casos') {
-        state.data = data[0];
-        state.plural = 's'
-      } else if (state.indicador == 'muertes') {
-        state.data = data[1];
-        state.plural = 'es'
-      }
       indicador.on("change", function(d){
         state.indicador = d3.select(this).node().value;
-        if (state.indicador == 'casos') {
-          state.data = data[0];
-          state.plural = 's'
-        } else if (state.indicador == 'muertes') {
-          state.data = data[1];
-          state.plural = 'es'
-        }
         updateOptions();
+        filterData();
+        updatePlot();
       });
 
       let cantidad = addOptions("cantidad", ["acumulados", "nuevos"], ["acumulados", "nuevos"]);
       state.cantidad = cantidad.node().value;
       cantidad.on("change", function(d){
         state.cantidad = d3.select(this).node().value;
+        filterData();
+        updatePlot();
       });
 
-      let unidad = addOptions("unidad", ["totales", "por cada 100.000 habitantes"], ["totales", "tasa"]);
+      unidad = addOptions("unidad", ["totales", "por cada 100.000 habitantes"], ["totales", "tasa"]);
       state.unidad = unidad.node().value;
       unidad.on("change", function(d){
         state.unidad = d3.select(this).node().value;
+        filterData();
+        updatePlot();
       });
 
       let escala = addOptions("escala", ["logarítmica", "lineal"], ["escala-logaritmica", "escala-lineal"]);
       state.escala = escala.node().value;
       escala.on("change", function(d){
         state.escala = d3.select(this).node().value;
+        updatePlot();
       });
     }
 
     function updateOptions() {
+
+      let microzona;
+      state.selected = [];
+
       if (state.indicador == "casos") {
-        let macrozonaLabels = new Set(state["data"].map(d => d["Region"]));
+        let macrozonaLabels = new Set(data[2].map(d => d["Region"]));
         let macrozonaValues = ["todo-chile", ...macrozonaLabels];
         macrozonaLabels = ["todo Chile", ...macrozonaLabels];
 
-        let macrozona = addOptions("macrozona", macrozonaLabels, macrozonaValues);
+        macrozona = addOptions("macrozona", macrozonaLabels, macrozonaValues);
         state.macrozona = macrozona.node().value;
 
         if (state.macrozona == "todo-chile") {
-          let microzona = addOptions("microzona", ["comuna", "región"], ["Comuna", "Region"]);
+          microzona = addOptions("microzona", ["comuna", "región"], ["Comuna", "Region"]);
           state.microzona = microzona.node().value;
+          microzona.on("change", function(d){
+            state.microzona = d3.select(this).node().value;
+            state.selected = [];
+            filterData();
+            updatePlot();
+          });
         } else {
-          let microzona = addOptions("microzona", ["comuna"], ["Comuna"]);
+          microzona = addOptions("microzona", ["comuna"], ["Comuna"]);
           state.microzona = microzona.node().value;
         }
 
         macrozona.on("change", function(d){
           state.macrozona = d3.select(this).node().value;
+          state.selected = [];
 
           if (state.macrozona == "todo-chile") {
-            let microzona = addOptions("microzona", ["comuna", "región"], ["Comuna", "Region"]);
+            microzona = addOptions("microzona", ["comuna", "región"], ["Comuna", "Region"]);
             state.microzona = microzona.node().value;
+            microzona.on("change", function(d){
+              state.microzona = d3.select(this).node().value;
+              state.selected = [];
+              filterData();
+              updatePlot();
+            });
           } else {
-            let microzona = addOptions("microzona", ["comuna"], ["Comuna"]);
+            microzona = addOptions("microzona", ["comuna"], ["Comuna"]);
             state.microzona = microzona.node().value;
           }
+          filterData();
+          updatePlot();
         })
 
       } else if (state.indicador == "muertes"){
 
-        let macrozona = addOptions("macrozona", ["todo Chile"], ["todo-chile"]);
+        macrozona = addOptions("macrozona", ["todo Chile"], ["todo-chile"]);
         state.macrozona = macrozona.node().value;
 
-        let microzona = addOptions("microzona", ["región"], ["Region"]);
+        microzona = addOptions("microzona", ["región"], ["Region"]);
         state.microzona = microzona.node().value;
+
+        filterData();
+        updatePlot();
       }
 
     }
@@ -245,90 +271,33 @@ Promise.all([
         .attr("value", (d,i) => attrs[i])
         .html(d => d);
 
-      options.html(d => d);
+      options.attr("value", (d,i) => attrs[i])
+        .html(d => d);
 
       options.exit().remove();
 
       return element;
     }
 
-    function addListeners() {
+    function filterData() {
 
-      // Add listeners to form objects
-      indicador = document.querySelector('#indicador');
-      cantidad = document.querySelector('#cantidad');
-      unidad = document.querySelector('#unidad');
-      macrozona = document.querySelector('#macrozona');
-      microzona = document.querySelector('#microzona');
-      escala = document.querySelector('#escala');
-
-      state.indicador = indicador.value;
-      state.cantidad = cantidad.value;
-      state.unidad = unidad.value;
-      state.macrozona = macrozona.value;
-      state.microzona = microzona.value;
-      state.escala = escala.value;
-
-      if (state.indicador == 'casos') {
-        state.data = data[0];
-        state.plural = 's'
-      } else if (state.indicador == 'muertes') {
+      if (state.indicador == "casos") {
+        if (state.microzona == "Comuna") {
+          state.data = data[0];
+        } else if (state.microzona == "Region"){
+          state.data = data[2];
+        }
+      } else if (state.indicador == "muertes"){
         state.data = data[1];
+      }
+
+      if (state.microzona == "Comuna") {
+        state.plural = 's';
+      } else if (state.microzona == "Region") {
         state.plural = 'es'
       }
-      state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
 
-      if (indicador !== null) indicador.addEventListener('change', function(){
-        state.indicador = indicador.value;
-        if (state.indicador == 'casos') {
-          state.data = data[0];
-          // state.microzona = 'Comuna';
-          microzona.value = 'Comuna'
-          microzona.dispatchEvent(new Event('change'));
-          state.plural = 's'
-        } else if (state.indicador == 'muertes') {
-          state.data = data[1];
-          microzona.value = 'Region'
-          microzona.dispatchEvent(new Event('change'));
-          state.plural = 'es'
-        }
-        state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-        filterData();
-        updatePlot();
-      });
-      if (cantidad !== null) cantidad.addEventListener('change', function(){
-        state.cantidad = cantidad.value;
-        state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-        filterData();
-        updatePlot();
-      });
-      if (unidad !== null) unidad.addEventListener('change', function(){
-        state.unidad = unidad.value;
-        state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-        filterData();
-        updatePlot();
-      });
-      if (macrozona !== null) macrozona.addEventListener('change', function(){
-        console.log('aqui1')
-        state.macrozona = macrozona.value;
-        filterData();
-        // updatePlot();
-      });
-      if (microzona !== null) microzona.addEventListener('change', function(){
-        console.log('aqui2')
-        state.microzona = microzona.value;
-        state.selected = [];
-        filterData();
-        // updatePlot();
-      });
-      if (escala !== null) escala.addEventListener('change', function(){
-        state.escala = escala.value;
-        state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-        updatePlot();
-      });
-    }
-
-    function filterData() {
+      state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.node().options[unidad.node().selectedIndex].text;
 
       datesString = state.data.columns.filter(d => d.slice(0,4) == '2020');
       var dates = datesString.map(d => dateParse(d));
@@ -337,7 +306,10 @@ Promise.all([
       noteSource.html('* Datos sacados del <a href="https://github.com/MinCiencia/Datos-COVID19" target="_blank">Ministerio de Ciencias</a> al ' + dateFormat(dates[dates.length -1]))
 
       if (state.indicador == "casos") {
-        state.filteredData = state.data.filter(d => +d[datesString[datesString.length - 1]] >+ threshold);
+        state.filteredData = state.data.filter(d => +d[datesString[datesString.length - 1]] >= threshold);
+        if (state.macrozona != 'todo-chile'){
+          state.filteredData = state.filteredData.filter(d => d["Region"] == state.macrozona);
+        }
       } else {
         state.filteredData = state.data;
       };
@@ -409,11 +381,13 @@ Promise.all([
     function updateSearchBox() {
       // Get microzona labels
       var microzonaLabels = new Set(state.filteredData.map(d => d[state.microzona]))
+      console.log(state.filteredData)
       microzonaLabels = [...microzonaLabels].sort();
       microzonaLabels = microzonaLabels.filter(d => state.selected.indexOf(d) < 0)
+      console.log(state)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
-      labelSearch.html("También puede seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar en el gráfico")
+      labelSearch.html("También puedes seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar en el gráfico")
       searchBox.attr("placeholder", "Buscar " + state.microzona.toLowerCase() + "...")
         .on("change", function(){
         let searchLabel = d3.select(this);
