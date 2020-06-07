@@ -19,6 +19,14 @@ body {
   margin-bottom: 30px;
 }
 
+.note {
+  margin-left: 0px;
+  margin-top: 8px;
+  font-size: 10px;
+  font-style: italic;
+  color: lightgray;
+}
+
 #searched {
   margin-left: 50px;
   margin-right: 50px;
