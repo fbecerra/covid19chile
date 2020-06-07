@@ -149,7 +149,6 @@ Promise.all([
         }, 0);
         labelsOutput[label] = poblacionRegion;
       }
-      console.log(data[0])
 
       // Delete "total" in Regiones and add Population
       let totalRegiones = data[1].filter(d => d.Region == 'Total')
@@ -185,7 +184,7 @@ Promise.all([
         updatePlot();
       });
 
-      unidad = addOptions("unidad", ["totales", "por cada 100.000 habitantes"], ["totales", "tasa"]);
+      unidad = addOptions("unidad", ["totales", "por cada 100.000 habitantes", "promedio 7 días"], ["totales", "tasa", "promedio"]);
       state.unidad = unidad.node().value;
       unidad.on("change", function(d){
         state.unidad = d3.select(this).node().value;
@@ -318,8 +317,10 @@ Promise.all([
 
         if (state.unidad == "totales") {
           factor = 1.0;
-        } else if (state.unidad == "tasa"){
+        } else if (state.unidad == "tasa") {
           factor = ele.Poblacion / 100000.0;
+        } else if (state.unidad == "promedio") {
+          factor = 7.0;
         }
 
         ele.values = datesString.map(d => +ele[d] / factor);
@@ -332,7 +333,18 @@ Promise.all([
         } else if (state.cantidad == "acumulados") {
           state.dates = dates;
         }
+
+        if (state.unidad == "promedio") {
+          let newValues = ele.values.map(function(d,i){
+            return (d + ele.values.slice(i-6, i).reduce((a,b) => a + b, 0));
+          });
+          ele.values = newValues.slice(7);
+          state.dates = state.dates.slice(7);
+        }
       })
+
+
+
     };
 
     function updateAxes() {
@@ -381,10 +393,8 @@ Promise.all([
     function updateSearchBox() {
       // Get microzona labels
       var microzonaLabels = new Set(state.filteredData.map(d => d[state.microzona]))
-      console.log(state.filteredData)
       microzonaLabels = [...microzonaLabels].sort();
       microzonaLabels = microzonaLabels.filter(d => state.selected.indexOf(d) < 0)
-      console.log(state)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
       labelSearch.html("También puedes seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar en el gráfico")
