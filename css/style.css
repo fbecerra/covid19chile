@@ -100,12 +100,24 @@ body {
 #search-box {
   border-color: gray;
   background-color: #fff7ec;
-  font-style: italic;
   padding: 4px 8px;
 }
 
+::-webkit-input-placeholder {
+   font-style: italic;
+}
+:-moz-placeholder {
+   font-style: italic;
+}
+::-moz-placeholder {
+   font-style: italic;
+}
+:-ms-input-placeholder {
+   font-style: italic;
+}
+
 .searched-term {
-  margin: 2px;
+  margin-right: 4px;
   padding: 2px 4px;
 }
 
