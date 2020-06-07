@@ -31,7 +31,7 @@ var state = {
       selected: [],
     }
 
-var lineOpacity = 0.8,
+var lineOpacity = 0.5,
     threshold = 10;
 
 var xScale = d3.scaleTime()
@@ -64,7 +64,7 @@ var xAxis = d3.axisBottom()
             .tickFormat(d3.timeFormat("%d %B"))
             .ticks(d3.timeWeek.every(1))
             .tickSizeOuter(0);
-var yAxis = d3.axisLeft();
+var yAxis;
 
 var dot = svg.append("g")
     .attr("display", "none");
@@ -106,102 +106,116 @@ Promise.all([
     d3.csv('https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto14/FallecidosCumulativo.csv')
 ]).then(function(data) {
 
-    // Calculate region population
-    data[0].forEach(function(ele){
-      ele.Poblacion = +ele.Poblacion;
-    })
-    var labelsRegiones = new Set(data[0].map(d => d.Region));
-    var labelsArray = [...labelsRegiones];
-    var labelsOutput = {};
-    for (let label of labelsArray){
-      let poblacionRegion = data[0].filter(d => d.Region == label).reduce(function(a,b){
-        return a + b.Poblacion;
-      }, 0);
-      labelsOutput[label] = poblacionRegion;
+    prepareData();
+    addListeners();
+    filterData();
+    updateAxes();
+    updateSearchBox();
+    updateCurves();
+    updateLabels();
+
+    function updatePlot() {
+      updateAxes();
+      updateSearchBox();
+      updateCurves();
+      updateLabels();
     }
 
-    // Delete "total" in Regiones and add Population
-    let totalRegiones = data[1].filter(d => d.Region == 'Total')
-    let indexTotal = data[1].indexOf(totalRegiones);
-    data[1].splice(indexTotal, 1);
-    data[1].forEach(function(ele){
-      ele["Poblacion"] = labelsOutput[ele.Region];
-    });
+    function prepareData() {
+      // Calculate region population
+      data[0].forEach(function(ele){
+        ele.Poblacion = +ele.Poblacion;
+      })
+      var labelsRegiones = new Set(data[0].map(d => d.Region));
+      var labelsArray = [...labelsRegiones];
+      var labelsOutput = {};
+      for (let label of labelsArray){
+        let poblacionRegion = data[0].filter(d => d.Region == label).reduce(function(a,b){
+          return a + b.Poblacion;
+        }, 0);
+        labelsOutput[label] = poblacionRegion;
+      }
 
-    // Add listeners to form objects
-    addListeners();
-    drawPlot();
+      // Delete "total" in Regiones and add Population
+      let totalRegiones = data[1].filter(d => d.Region == 'Total')
+      let indexTotal = data[1].indexOf(totalRegiones);
+      data[1].splice(indexTotal, 1);
+      data[1].forEach(function(ele){
+        ele["Poblacion"] = labelsOutput[ele.Region];
+      });
+    }
 
     function addListeners() {
-        indicador = document.querySelector('#indicador');
-        cantidad = document.querySelector('#cantidad');
-        unidad = document.querySelector('#unidad');
-        macrozona = document.querySelector('#macrozona');
-        microzona = document.querySelector('#microzona');
-        escala = document.querySelector('#escala');
 
+      // Add listeners to form objects
+      indicador = document.querySelector('#indicador');
+      cantidad = document.querySelector('#cantidad');
+      unidad = document.querySelector('#unidad');
+      macrozona = document.querySelector('#macrozona');
+      microzona = document.querySelector('#microzona');
+      escala = document.querySelector('#escala');
+
+      state.indicador = indicador.value;
+      state.cantidad = cantidad.value;
+      state.unidad = unidad.value;
+      state.macrozona = macrozona.value;
+      state.microzona = microzona.value;
+      state.escala = escala.value;
+
+      if (state.indicador == 'casos') {
+        state.data = data[0];
+        state.plural = 's'
+      } else if (state.indicador == 'muertes') {
+        state.data = data[1];
+        state.plural = 'es'
+      }
+      state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
+
+      if (indicador !== null) indicador.addEventListener('change', function(){
         state.indicador = indicador.value;
-        state.cantidad = cantidad.value;
-        state.unidad = unidad.value;
-        state.macrozona = macrozona.value;
-        state.microzona = microzona.value;
-        state.escala = escala.value;
-
         if (state.indicador == 'casos') {
           state.data = data[0];
+          state.microzona = 'Comuna';
           state.plural = 's'
         } else if (state.indicador == 'muertes') {
           state.data = data[1];
+          state.microzona = 'Region'; // TODO: Change value of "microzona" object and lock microzona
           state.plural = 'es'
         }
         state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-
-        // if (series_pk !== null) series_pk.addEventListener('change', changeSeries);
-        if (indicador !== null) indicador.addEventListener('change', function(){
-          state.indicador = indicador.value;
-          if (state.indicador == 'casos') {
-            state.data = data[0];
-            state.microzona = 'Comuna';
-            state.plural = 's'
-          } else if (state.indicador == 'muertes') {
-            state.data = data[1];
-            state.microzona = 'Region'; // TODO: Change value of "microzona" object and lock microzona
-            state.plural = 'es'
-          }
-          state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-          drawPlot();
-        });
-        if (cantidad !== null) cantidad.addEventListener('change', function(){
-          state.cantidad = cantidad.value;
-          state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-          drawPlot();
-        });
-        if (unidad !== null) unidad.addEventListener('change', function(){
-          state.unidad = unidad.value;
-          state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-          drawPlot();
-        });
-        if (escala !== null) escala.addEventListener('change', function(){
-          state.escala = escala.value;
-          state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
-          drawPlot();
-        });
-
+        filterData();
+        updatePlot();
+      });
+      if (cantidad !== null) cantidad.addEventListener('change', function(){
+        state.cantidad = cantidad.value;
+        state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
+        filterData();
+        updatePlot();
+      });
+      if (unidad !== null) unidad.addEventListener('change', function(){
+        state.unidad = unidad.value;
+        state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
+        filterData();
+        updatePlot();
+      });
+      if (escala !== null) escala.addEventListener('change', function(){
+        state.escala = escala.value;
+        state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
+        updatePlot();
+      });
     }
 
-    function drawPlot() {
+    function filterData() {
 
-      console.log(state.selected)
-
-      datesString = state.data.columns.filter(d => d.slice(0,4) == '2020')
-      var dates = datesString.map(d => dateParse(d))
+      datesString = state.data.columns.filter(d => d.slice(0,4) == '2020');
+      var dates = datesString.map(d => dateParse(d));
       let factor;
 
-      if (state.indicador == 'casos') {
+      if (state.indicador == "casos") {
         state.filteredData = state.data.filter(d => +d[datesString[datesString.length - 1]] >+ threshold);
       } else {
         state.filteredData = state.data;
-      }
+      };
 
       state.filteredData.forEach(function(ele){
 
@@ -221,41 +235,60 @@ Promise.all([
         } else if (state.cantidad == "acumulados") {
           state.dates = dates;
         }
+      })
+    };
 
-      });
+    function updateAxes() {
 
-      // console.log(state.data)
-
-      xScale.domain(d3.extent(state.dates))
-      xAxis.scale(xScale)
+      xScale.domain(d3.extent(state.dates));
+      xAxis.scale(xScale);
 
       if (state.escala == "escala-logaritmica"){
+        let yMax = d3.max(state.filteredData, d => d3.max(d.values)) + 1;
         yScale = d3.scaleLog()
             .range([height - margin.bottom, 0])
-            .domain([1, d3.max(state.filteredData, d => d3.max(d.values)) + 1])
-        yAxis.scale(yScale)
-            .tickValues([2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
-            // .ticks(2)
+            .domain([1, yMax])
+        let tickValues = d3.range(yMax.toString().length)
+          .map(d => [1 * 10**d, 2 * 10**d, 5 * 10**d])
+        tickValues = tickValues.flat().filter(d => d <= yMax);
+        yAxis = d3.axisLeft()
+            .scale(yScale)
+            .tickValues(tickValues)
             .tickFormat(d3.format('i'))
         line.x((d, i) => xScale(state.dates[i]))
           .y(d => yScale(d + 1));
       } else if (state.escala == "escala-lineal") {
+
+        let yMax = d3.max(state.filteredData, d => d3.max(d.values));
         yScale = d3.scaleLinear()
             .range([height - margin.bottom, 0])
-            .domain([0, d3.max(state.filteredData, d => d3.max(d.values))]).nice()
-        yAxis.scale(yScale)
-            .tickValues(d3.range(0, yScale.domain()[1] + 500, 500));
+            .domain([0, yMax]).nice()
+        yAxis = d3.axisLeft()
+            .scale(yScale)
         line.x((d, i) => xScale(state.dates[i]))
           .y(d => yScale(d));
       }
 
+      gXAxis.call(xAxis);
+      gYAxis.call(yAxis);
+
+      gYAxis.select(".y.title")
+        .attr("text-anchor", "end")
+        // .style("font-size", (mobileScreen ? 8 : 12) + "px")
+        .style("font-size", "12px")
+        .attr("fill", "black")
+        .attr("transform", "translate(18, 5) rotate(-90)")
+        .text(state.yLabel);
+    };
+
+    function updateSearchBox() {
       // Get microzona labels
       var microzonaLabels = new Set(state.filteredData.map(d => d[state.microzona]))
       microzonaLabels = [...microzonaLabels].sort();
       microzonaLabels = microzonaLabels.filter(d => state.selected.indexOf(d) < 0)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
-      labelSearch.html("Puede seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar")
+      labelSearch.html("Seleccione hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar")
       searchBox//.attr("placeholder", "Seleccione una " + state.microzona.toLowerCase() + " del listado")
         .on("change", function(){
         let searchLabel = d3.select(this);
@@ -265,7 +298,8 @@ Promise.all([
         if (idxLabel >= 0) {
           state.selected.push(microzonaLabels[idxLabel]);
           searchLabel.node().value = "";
-          drawPlot();
+          updateCurves();
+          updateLabels();
         }
       });
 
@@ -277,18 +311,9 @@ Promise.all([
       options.html(d => d);
 
       options.exit().remove();
+    }
 
-      gXAxis.call(xAxis);
-      gYAxis.call(yAxis);
-
-      // gYAxis.select(".domain").remove()
-      gYAxis.select(".y.title")
-      	.attr("text-anchor", "end")
-      	// .style("font-size", (mobileScreen ? 8 : 12) + "px")
-        .style("font-size", "12px")
-        .attr("fill", "black")
-      	.attr("transform", "translate(18, 5) rotate(-90)")
-      	.text(state.yLabel);
+    function updateCurves() {
 
       var path = g.selectAll("path").data(state.filteredData);
 
@@ -300,10 +325,10 @@ Promise.all([
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
         .style("mix-blend-mode", "multiply")
-        .attr("opacity", lineOpacity)
+        .attr("opacity", curveOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
         .attr("stroke", curveColor)
-        .attr("d", d => line(d.values))
+        .attr("d", d => line(d.values));
 
       path.transition()
         .duration(transition)
@@ -312,84 +337,18 @@ Promise.all([
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
         .style("mix-blend-mode", "multiply")
-        .attr("opacity", lineOpacity)
+        .attr("opacity", curveOpacity)
         .attr("class", d => "curve "+nameNoSpaces(d[state.microzona]))
         .attr("stroke", curveColor)
-        .attr("d", d => line(d.values))
+        .attr("d", d => line(d.values));
 
-      path.exit().remove()
+      path.exit().remove();
 
-      updateLabels();
+      svg.call(hover, g.selectAll("curve"));
 
-      svg.call(hover, g.selectAll("curve"))
-
-      function updateLabels() {
-
-        var selectedBoxes = searched.selectAll(".searched-term").data(state.selected);
-
-        selectedBoxes.enter().append("div")
-          .attr("class", d => "searched-term "+nameNoSpaces(d))
-          .style("color", (d, i) => colors[i])
-          .style("background-color", function(d, i){
-            let rgb = d3.rgb(colors[i])
-            return `rgba(${rgb.r},${rgb.g},${rgb.b},0.05)`
-          })
-          .on("click", removeLabel)
-          .html(d => d + '<span class="delete-term"><i class="fas fa-times-circle"></i></span>')
-
-        selectedBoxes
-          .attr("class", d => "searched-term "+nameNoSpaces(d))
-          .style("color", (d, i) => colors[i])
-          .style("background-color", function(d, i){
-            let rgb = d3.rgb(colors[i])
-            return `rgba(${rgb.r},${rgb.g},${rgb.b},0.05)`
-          })
-          .on("click", removeLabel)
-          .html(d => d + '<span class="delete-term"><i class="fas fa-times-circle"></i></span>')
-
-        selectedBoxes.exit().remove()
-
-        var selectedText = g.selectAll(".selected-text").data(state.selected);
-        console.log(selectedText)
-
-        selectedText.enter().append("text")
-          .attr("class", "selected-text")
-          .attr("font-family", "sans-serif")
-          .attr("font-size", 12)
-          .attr("text-anchor", "start")
-          .attr("stroke", (d, i) => colors[i])
-          .attr("transform", function(d){
-            let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
-            let idxDate = state.dates.length - 1,
-                idxData = curveData.values.length - 1;
-            if (state.escala == "escala-logaritmica"){
-              return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
-            } else if (state.escala == "escala-lineal") {
-              return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
-            }
-          })
-          .text(d => d)
-
-        selectedText.attr("stroke", (d, i) => colors[i])
-          .attr("transform", function(d){
-            let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
-            let idxDate = state.dates.length - 1,
-                idxData = curveData.values.length - 1;
-            if (state.escala == "escala-logaritmica"){
-              return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
-            } else if (state.escala == "escala-lineal") {
-              return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
-            }
-          })
-          .text(d => d)
-
-        selectedText.exit().remove()
-      }
-
-      function removeLabel(d) {
-        state.selected = state.selected.filter(e => d != e);
-        label.attr("opacity", 0.0);
-        drawPlot();
+      function curveOpacity(d) {
+        let idx = state.selected.indexOf(d[state.microzona]);
+        return idx < 0 ? lineOpacity : 1.0;
       }
 
       function curveColor(d) {
@@ -436,12 +395,8 @@ Promise.all([
             return sIdx < 0 ? colors[state.selected.length] : colors[sIdx];
           }
 
-          // console.log(s)
           d3.selectAll(".curve")
-            .attr("opacity", function(d){
-              let idx = state.selected.indexOf(d[state.microzona]);
-              return idx < 0 ? 0.5 : 1.0;
-            })
+            .attr("opacity", curveOpacity)
             .attr("stroke", curveColor)
             .attr("stroke-width", curveWidth)
 
@@ -449,9 +404,6 @@ Promise.all([
             .attr("opacity", 1.0)
             .attr("stroke", hoverColor)
             .attr("stroke-width", 2.5)
-
-
-          // path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
 
           dot.attr("opacity", 0.0)
           label.attr("opacity", 0.0)
@@ -521,29 +473,84 @@ Promise.all([
           if (sIdx < 0) {
             state.selected.push(s[state.microzona])
             updateLabels();
+            updateSearchBox();
           }
         }
       }
+    } // updateCurves
+
+    function updateLabels() {
+
+      var selectedBoxes = searched.selectAll(".searched-term").data(state.selected);
+
+      selectedBoxes.enter().append("div")
+        .attr("class", d => "searched-term "+nameNoSpaces(d))
+        .style("color", (d, i) => colors[i])
+        .style("background-color", function(d, i){
+          let rgb = d3.rgb(colors[i])
+          return `rgba(${rgb.r},${rgb.g},${rgb.b},0.05)`
+        })
+        .on("click", removeLabel)
+        .html(d => d + '<span class="delete-term"><i class="fas fa-times-circle"></i></span>')
+
+      selectedBoxes
+        .attr("class", d => "searched-term "+nameNoSpaces(d))
+        .style("color", (d, i) => colors[i])
+        .style("background-color", function(d, i){
+          let rgb = d3.rgb(colors[i])
+          return `rgba(${rgb.r},${rgb.g},${rgb.b},0.05)`
+        })
+        .on("click", removeLabel)
+        .html(d => d + '<span class="delete-term"><i class="fas fa-times-circle"></i></span>')
+
+      selectedBoxes.exit().remove()
+
+      var selectedText = g.selectAll(".selected-text").data(state.selected);
+      console.log(selectedText)
+
+      selectedText.enter().append("text")
+        .attr("class", "selected-text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 12)
+        .attr("text-anchor", "start")
+        .attr("stroke", (d, i) => colors[i])
+        .attr("transform", function(d){
+          let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
+          let idxDate = state.dates.length - 1,
+              idxData = curveData.values.length - 1;
+          if (state.escala == "escala-logaritmica"){
+            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
+          } else if (state.escala == "escala-lineal") {
+            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
+          }
+        })
+        .text(d => d)
+
+      selectedText.attr("stroke", (d, i) => colors[i])
+        .attr("transform", function(d){
+          let curveData = d3.selectAll(".curve."+nameNoSpaces(d)).data()[0];
+          let idxDate = state.dates.length - 1,
+              idxData = curveData.values.length - 1;
+          if (state.escala == "escala-logaritmica"){
+            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData] + 1)+2})`;
+          } else if (state.escala == "escala-lineal") {
+            return `translate(${xScale(state.dates[idxDate])+5},${yScale(curveData.values[idxData])+2})`;
+          }
+        })
+        .text(d => d)
+
+      selectedText.exit().remove()
+
+      function removeLabel(d) {
+        state.selected = state.selected.filter(e => d != e);
+        label.attr("opacity", 0.0);
+        updateCurves();
+        updateLabels();
+        updateSearchBox();
+      }
+    } //updateLabels
 
 
-
-      // var selection = d3.selectAll(".curve").data(state.filteredData)
-      //
-      // selection.enter()
-      //   .append("path")
-      //   .transition(500)
-      //   .attr("d", function(d){
-      //     return line(d.values)
-      //   })
-      //
-      // selection.transition(500)
-      //   .attr("d", function(d){
-      //     return line(d.values)
-      //   })
-      //
-      // selection.exit().remove()
-
-    }
   })
   .catch(function(error){
     console.log(error)
