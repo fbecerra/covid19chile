@@ -68,17 +68,17 @@ var xAxis = d3.axisBottom()
             .tickSizeOuter(0);
 var yAxis;
 
-var dot = svg.append("g")
-    .attr("display", "none");
-
-dot.append("circle")
-    .attr("r", 2.5);
-
-dot.append("text")
-    .attr("font-family", "sans-serif")
-    .attr("font-size", 10)
-    .attr("text-anchor", "middle")
-    .attr("y", -8);
+// var dot = svg.append("g")
+//     .attr("display", "none");
+//
+// dot.append("circle")
+//     .attr("r", 2.5);
+//
+// dot.append("text")
+//     .attr("font-family", "sans-serif")
+//     .attr("font-size", 10)
+//     .attr("text-anchor", "middle")
+//     .attr("y", -8);
 
 var label = svg.append("g")
     .attr("display", "none")
@@ -516,22 +516,22 @@ Promise.all([
             .attr("stroke", hoverColor)
             .attr("stroke-width", 2.5)
 
-          dot.attr("opacity", 0.0)
+          // dot.attr("opacity", 0.0)
           label.attr("opacity", 0.0)
 
           // Circle showing value
           if (sIdx >= 0) {
 
-            dot.attr("fill", hoverColor)
-              .attr("opacity", 1.0)
-              .attr("transform", function(d){
-                if (state.escala == "escala-logaritmica"){
-                  return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
-                } else if (state.escala == "escala-lineal") {
-                  return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i])+margin.top})`;
-                }
-              });
-            dot.select("text").text(s.values[i]);
+            // dot.attr("fill", hoverColor)
+            //   .attr("opacity", 1.0)
+            //   .attr("transform", function(d){
+            //     if (state.escala == "escala-logaritmica"){
+            //       return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i]+1)+margin.top})`;
+            //     } else if (state.escala == "escala-lineal") {
+            //       return `translate(${xScale(state.dates[i])+margin.left},${yScale(s.values[i])+margin.top})`;
+            //     }
+            //   });
+            // dot.select("text").text(s.values[i]);
 
           } else {
 
