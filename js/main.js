@@ -95,6 +95,12 @@ var datalist = d3.select("#microzonas"),
     searched = d3.select("#searched"),
     labelSearch = d3.select("#search-label"),
     noteSource = d3.select("#note-source");
+    // indicador = d3.select('#indicador'),
+    // cantidad = d3.select('#cantidad'),
+    // unidad = d3.select('#unidad'),
+    // macrozona = dd3.select'#macrozona'),
+    // microzona = d3.select('#microzona'),
+    // escala = d3.select('#escala');
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -110,6 +116,8 @@ Promise.all([
 ]).then(function(data) {
 
     prepareData();
+    // initializeOptions();
+    // updateOptions();
     addListeners();
     filterData();
     updateAxes();
@@ -146,6 +154,102 @@ Promise.all([
       data[1].forEach(function(ele){
         ele["Poblacion"] = labelsOutput[ele.Region];
       });
+    }
+
+    function initializeOptions() {
+      let indicador = addOptions("indicador", ["casos", "muertes"], ["casos", "muertes"]);
+      state.indicador = indicador.node().value;
+      if (state.indicador == 'casos') {
+        state.data = data[0];
+        state.plural = 's'
+      } else if (state.indicador == 'muertes') {
+        state.data = data[1];
+        state.plural = 'es'
+      }
+      indicador.on("change", function(d){
+        state.indicador = d3.select(this).node().value;
+        if (state.indicador == 'casos') {
+          state.data = data[0];
+          state.plural = 's'
+        } else if (state.indicador == 'muertes') {
+          state.data = data[1];
+          state.plural = 'es'
+        }
+        updateOptions();
+      });
+
+      let cantidad = addOptions("cantidad", ["acumulados", "nuevos"], ["acumulados", "nuevos"]);
+      state.cantidad = cantidad.node().value;
+      cantidad.on("change", function(d){
+        state.cantidad = d3.select(this).node().value;
+      });
+
+      let unidad = addOptions("unidad", ["totales", "por cada 100.000 habitantes"], ["totales", "tasa"]);
+      state.unidad = unidad.node().value;
+      unidad.on("change", function(d){
+        state.unidad = d3.select(this).node().value;
+      });
+
+      let escala = addOptions("escala", ["logarítmica", "lineal"], ["escala-logaritmica", "escala-lineal"]);
+      state.escala = escala.node().value;
+      escala.on("change", function(d){
+        state.escala = d3.select(this).node().value;
+      });
+    }
+
+    function updateOptions() {
+      if (state.indicador == "casos") {
+        let macrozonaLabels = new Set(state["data"].map(d => d["Region"]));
+        let macrozonaValues = ["todo-chile", ...macrozonaLabels];
+        macrozonaLabels = ["todo Chile", ...macrozonaLabels];
+
+        let macrozona = addOptions("macrozona", macrozonaLabels, macrozonaValues);
+        state.macrozona = macrozona.node().value;
+
+        if (state.macrozona == "todo-chile") {
+          let microzona = addOptions("microzona", ["comuna", "región"], ["Comuna", "Region"]);
+          state.microzona = microzona.node().value;
+        } else {
+          let microzona = addOptions("microzona", ["comuna"], ["Comuna"]);
+          state.microzona = microzona.node().value;
+        }
+
+        macrozona.on("change", function(d){
+          state.macrozona = d3.select(this).node().value;
+
+          if (state.macrozona == "todo-chile") {
+            let microzona = addOptions("microzona", ["comuna", "región"], ["Comuna", "Region"]);
+            state.microzona = microzona.node().value;
+          } else {
+            let microzona = addOptions("microzona", ["comuna"], ["Comuna"]);
+            state.microzona = microzona.node().value;
+          }
+        })
+
+      } else if (state.indicador == "muertes"){
+
+        let macrozona = addOptions("macrozona", ["todo Chile"], ["todo-chile"]);
+        state.macrozona = macrozona.node().value;
+
+        let microzona = addOptions("microzona", ["región"], ["Region"]);
+        state.microzona = microzona.node().value;
+      }
+
+    }
+
+    function addOptions(id, values, attrs) {
+      var element = d3.select("#"+id);
+      var options = element.selectAll("option").data(values);
+
+      options.enter().append("option")
+        .attr("value", (d,i) => attrs[i])
+        .html(d => d);
+
+      options.html(d => d);
+
+      options.exit().remove();
+
+      return element;
     }
 
     function addListeners() {
@@ -307,7 +411,6 @@ Promise.all([
       var microzonaLabels = new Set(state.filteredData.map(d => d[state.microzona]))
       microzonaLabels = [...microzonaLabels].sort();
       microzonaLabels = microzonaLabels.filter(d => state.selected.indexOf(d) < 0)
-      console.log(state.microzona, microzonaLabels)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
       labelSearch.html("También puede seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar en el gráfico")
@@ -531,7 +634,6 @@ Promise.all([
       selectedBoxes.exit().remove()
 
       var selectedText = g.selectAll(".selected-text").data(state.selected);
-      console.log(state.selected)
 
       selectedText.enter().append("text")
         .attr("class", "selected-text")
