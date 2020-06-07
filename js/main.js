@@ -305,18 +305,20 @@ Promise.all([
       console.log(state.microzona, microzonaLabels)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
-      labelSearch.html("Seleccione hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar")
+      labelSearch.html("También puede seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar")
       searchBox//.attr("placeholder", "Seleccione una " + state.microzona.toLowerCase() + " del listado")
         .on("change", function(){
         let searchLabel = d3.select(this);
         let searchedLabel = searchLabel.property("value");
         let idxLabel = lowerMicrozonaLabels.indexOf(searchedLabel.toLowerCase());
+        let nSelected = state.selected.length;
 
-        if (idxLabel >= 0) {
+        if (idxLabel >= 0 && nSelected < colors.length - 1) {
           state.selected.push(microzonaLabels[idxLabel]);
           searchLabel.node().value = "";
           updateCurves();
           updateLabels();
+          updateSearchBox();
         }
       });
 
@@ -487,7 +489,8 @@ Promise.all([
             s = d3.least(state.filteredData, d => Math.abs(d.values[i] - ym));
           }
           const sIdx = state.selected.indexOf(s[state.microzona]);
-          if (sIdx < 0) {
+          let nSelected = state.selected.length;
+          if (sIdx < 0 && nSelected < colors.length - 1) {
             state.selected.push(s[state.microzona])
             updateLabels();
             updateSearchBox();
