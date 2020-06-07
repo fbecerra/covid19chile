@@ -175,11 +175,14 @@ Promise.all([
         state.indicador = indicador.value;
         if (state.indicador == 'casos') {
           state.data = data[0];
-          state.microzona = 'Comuna';
+          // state.microzona = 'Comuna';
+          microzona.value = 'Comuna'
+          microzona.dispatchEvent(new Event('change'));
           state.plural = 's'
         } else if (state.indicador == 'muertes') {
           state.data = data[1];
-          state.microzona = 'Region'; // TODO: Change value of "microzona" object and lock microzona
+          microzona.value = 'Region'
+          microzona.dispatchEvent(new Event('change'));
           state.plural = 'es'
         }
         state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
@@ -197,6 +200,19 @@ Promise.all([
         state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.options[unidad.selectedIndex].text;
         filterData();
         updatePlot();
+      });
+      if (macrozona !== null) macrozona.addEventListener('change', function(){
+        console.log('aqui1')
+        state.macrozona = macrozona.value;
+        filterData();
+        // updatePlot();
+      });
+      if (microzona !== null) microzona.addEventListener('change', function(){
+        console.log('aqui2')
+        state.microzona = microzona.value;
+        state.selected = [];
+        filterData();
+        // updatePlot();
       });
       if (escala !== null) escala.addEventListener('change', function(){
         state.escala = escala.value;
@@ -286,6 +302,7 @@ Promise.all([
       var microzonaLabels = new Set(state.filteredData.map(d => d[state.microzona]))
       microzonaLabels = [...microzonaLabels].sort();
       microzonaLabels = microzonaLabels.filter(d => state.selected.indexOf(d) < 0)
+      console.log(state.microzona, microzonaLabels)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
       labelSearch.html("Seleccione hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar")
@@ -447,7 +464,7 @@ Promise.all([
 
         function left() {
           d3.selectAll(".curve")
-              .attr("opacity", lineOpacity)
+              .attr("opacity", curveOpacity)
               .attr("stroke", curveColor)
               .attr("stroke-width", curveWidth)
           path.style("mix-blend-mode", "multiply").attr("stroke", null);
@@ -506,7 +523,7 @@ Promise.all([
       selectedBoxes.exit().remove()
 
       var selectedText = g.selectAll(".selected-text").data(state.selected);
-      console.log(selectedText)
+      console.log(state.selected)
 
       selectedText.enter().append("text")
         .attr("class", "selected-text")
@@ -539,7 +556,7 @@ Promise.all([
         })
         .text(d => d)
 
-      selectedText.exit().remove()
+      selectedText.exit().remove();
 
       function removeLabel(d) {
         state.selected = state.selected.filter(e => d != e);
