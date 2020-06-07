@@ -1,5 +1,6 @@
 body {
   font-family: 'Lato', sans-serif;
+  background-color: #fff7ec;
 }
 
 .title {
@@ -24,15 +25,14 @@ body {
   margin-top: 8px;
   font-size: 10px;
   font-style: italic;
-  color: lightgray;
 }
 
 .note p {
   margin-bottom: 0;
 }
 
-.note a {
-  color: lightgray;
+.note, .note a {
+  color: rgba(153,153,153, 0.7);
 }
 
 #searched {
@@ -61,7 +61,7 @@ body {
   background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
   background-repeat: no-repeat;
   background-position-x: 100%;
-  background-position-y: 0.15em;
+  background-position-y: 0;
   transition: all .4s ease-in-out;
 }
 
@@ -99,6 +99,8 @@ body {
 
 #search-box {
   border-color: gray;
+  background-color: #fff7ec;
+  font-style: italic;
   padding: 4px 8px;
 }
 
@@ -143,4 +145,19 @@ body {
 .footer a:hover{
   color: black;
   text-decoration: none;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+input[type=text] {
+  -moz-appearance: textfield;
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
 }
