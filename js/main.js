@@ -1,13 +1,13 @@
 
 var plotWidth = d3.select("#right-col").node().getBoundingClientRect().width,
-    plotHeight = window.innerHeight * 0.9,
+    plotHeight = window.innerHeight * 0.8,
     leftWidth = d3.select("#left-col").node().getBoundingClientRect().width;
 
 var plot = d3.select("#plot")
     .attr("width", plotWidth)
     .attr("height", plotHeight);
 
-var margin = {top: 50, right: 80, bottom: 50, left: 50},
+var margin = {top: 20, right: 80, bottom: 20, left: 50},
     width = plotWidth - margin.left - margin.right,
     height = plotHeight - margin.top - margin.bottom;
 
@@ -51,14 +51,14 @@ var g = svg.append("g")
 
 var gXAxis = svg.append("g")
     .attr("class", "x axis")
-    .attr("transform", "translate(" + margin.left + "," + height + ")");
+    .attr("transform", "translate(" + margin.left + "," + (margin.top + height - margin.bottom) + ")");
 var gYAxis = svg.append("g")
     .attr("class", "y axis")
     .attr("transform", "translate(" + (2 * margin.left) + "," + margin.top + ")")
 
 var yLabel = gYAxis.append("g")
     .append("text")
-    .attr("class", "y title")
+    .attr("class", "y axis-title")
 
 var xAxis = d3.axisBottom()
             .tickFormat(d3.timeFormat("%d %B"))
@@ -288,7 +288,7 @@ Promise.all([
       gXAxis.call(xAxis);
       gYAxis.call(yAxis);
 
-      gYAxis.select(".y.title")
+      gYAxis.select(".y.axis-title")
         .attr("text-anchor", "end")
         // .style("font-size", (mobileScreen ? 8 : 12) + "px")
         .style("font-size", "12px")

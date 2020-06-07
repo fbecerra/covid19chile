@@ -6,6 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>COVID-19 Chile</title>
 
+	<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Oswald&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/all.min.css">
 	<link rel="stylesheet" href="css/style.css">
@@ -14,13 +15,13 @@
 	<div class="row title">
 		<header>
 			<h2>Visualizador de datos Covid-19 en Chile</h2>
-			<h5>Por Fernando Becerra</h5>
 		</header>
 	</div>
-	<div class="row">
+	<div class="row content">
 		<div class="col-4" id="left-col">
 			<div class="row" id="text-description">
-				Este gráfico muestra el número de
+				El gráfico a la derecha muestra el número de
+				&nbsp;
 				<form class="form-inline">
 					<div class="form-group">
 						<select class="form-control" id="indicador">
@@ -29,6 +30,7 @@
 						</select>
 					</div>
 				</form>
+				&nbsp;
 				<form class="form-inline">
 					<div class="form-group">
 						<select class="form-control" id="cantidad">
@@ -37,6 +39,7 @@
 						</select>
 					</div>
 				</form>
+				&nbsp;
 				<form class="form-inline">
 					<div class="form-group">
 						<select class="form-control" id="unidad">
@@ -45,7 +48,9 @@
 						</select>
 					</div>
 				</form>
+				&nbsp;
 				en
+				&nbsp;
 				<form class="form-inline">
 					<div class="form-group">
 						<select class="form-control" id="macrozona">
@@ -54,7 +59,9 @@
 						</select>
 					</div>
 				</form>
+				&nbsp;
 				por
+				&nbsp;
 				<form class="form-inline">
 					<div class="form-group">
 						<select class="form-control" id="microzona">
@@ -63,7 +70,9 @@
 						</select>
 					</div>
 				</form>
+				&nbsp;
 				en escala
+				&nbsp;
 				<form class="form-inline">
 					<div class="form-group">
 						<select class="form-control" id="escala">
@@ -88,6 +97,15 @@
 			<div class="row" id="plot">
 			</div>
 		</div>
+	</div>
+	<div class="row footer">
+		<footer>
+			<h6>Creado por Fernando Becerra. Contacto:
+				<i class="fab fa-twitter"></i>
+				<i class="fab fa-github"></i>
+				<i class="far fa-envelope"></i>
+			</h6>
+		</footer>
 	</div>
 
 	<script src="js/jquery-3.5.0.min.js"></script>
