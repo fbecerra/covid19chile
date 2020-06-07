@@ -305,7 +305,7 @@ Promise.all([
       console.log(state.microzona, microzonaLabels)
       var lowerMicrozonaLabels = microzonaLabels.map(d => d.toLowerCase());
 
-      labelSearch.html("También puede seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar")
+      labelSearch.html("También puede seleccionar hasta 7 " + state.microzona.toLowerCase() + state.plural + " para destacar en el gráfico")
       searchBox//.attr("placeholder", "Seleccione una " + state.microzona.toLowerCase() + " del listado")
         .on("change", function(){
         let searchLabel = d3.select(this);
