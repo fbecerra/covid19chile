@@ -60,6 +60,8 @@ var yLabel = gYAxis.append("g")
     .append("text")
     .attr("class", "y axis-title")
 
+var dateFormat = d3.timeFormat("%d de %B");
+
 var xAxis = d3.axisBottom()
             .tickFormat(d3.timeFormat("%d %B"))
             .ticks(d3.timeWeek.every(1))
@@ -91,7 +93,8 @@ label.append("text")
 var datalist = d3.select("#microzonas"),
     searchBox = d3.select("#search-box").style("width", `${leftWidth-100}px`),
     searched = d3.select("#searched"),
-    labelSearch = d3.select("#search-label");
+    labelSearch = d3.select("#search-label"),
+    noteSource = d3.select("#note-source");
 
 var nameNoSpaces = function(name) {
   return name.toLowerCase().split(" ").join("");
@@ -226,6 +229,8 @@ Promise.all([
       datesString = state.data.columns.filter(d => d.slice(0,4) == '2020');
       var dates = datesString.map(d => dateParse(d));
       let factor;
+
+      noteSource.html('* Datos sacados del <a href="https://github.com/MinCiencia/Datos-COVID19" target="_blank">Ministerio de Ciencias</a> al ' + dateFormat(dates[dates.length -1]))
 
       if (state.indicador == "casos") {
         state.filteredData = state.data.filter(d => +d[datesString[datesString.length - 1]] >+ threshold);
