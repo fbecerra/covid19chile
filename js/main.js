@@ -302,7 +302,7 @@ Promise.all([
       var dates = datesString.map(d => dateParse(d));
       let factor;
 
-      noteSource.html('* Datos sacados del <a href="https://github.com/MinCiencia/Datos-COVID19" target="_blank">Ministerio de Ciencias</a> al ' + dateFormat(dates[dates.length -1]))
+      noteSource.html('* Datos sacados del <a href="https://github.com/MinCiencia/Datos-COVID19" target="_blank">Ministerio de Ciencias</a> hasta el ' + dateFormat(dates[dates.length -1]))
 
       if (state.indicador == "casos") {
         state.filteredData = state.data.filter(d => +d[datesString[datesString.length - 1]] >= threshold);
