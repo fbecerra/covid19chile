@@ -1,6 +1,6 @@
 # Visualizador de datos COVID-19 en Chile
 
-Esta visualización interactiva permite explorar los datos proporcionados por el [Ministerio de Ciencia](https://github.com/MinCiencia/Datos-COVID19). Los distintos menús permiten elegir entre:
+[Esta visualización interactiva](http://fernandobecerra.com/covid19chile) permite explorar los datos proporcionados por el [Ministerio de Ciencia](https://github.com/MinCiencia/Datos-COVID19). Los distintos menús permiten elegir entre:
 
 * casos y fallecidos confirmados,
 * acumulados y nuevos,
