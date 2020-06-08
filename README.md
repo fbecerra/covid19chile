@@ -1,6 +1,8 @@
 # Visualizador de datos COVID-19 en Chile
 
-[Esta visualización interactiva](http://fernandobecerra.com/covid19chile) permite explorar los datos proporcionados por el [Ministerio de Ciencia](https://github.com/MinCiencia/Datos-COVID19). Los distintos menús permiten elegir entre:
+![](images/Visualizador.png)
+
+[Esta visualización interactiva](http://fernandobecerra.com/covid19chile) permite explorar los datos proporcionados por el [Ministerio de Ciencia](https://github.com/MinCiencia/Datos-COVID19). Los distintos menús dan la opción de elegir entre:
 
 * casos y fallecidos confirmados,
 * acumulados y nuevos,
@@ -8,7 +10,7 @@
 * nivel nacional, regional y comunal,
 * escala lineal y logarítmica.
 
-Además tiene la opción de destacar hasta 7 buscar regiones o comunas ya sea buscándolas en la barra o haciendo click en una de las curvas.
+Además tiene la opción de destacar hasta 7 regiones o comunas ya sea buscándolas en la barra o haciendo click sobre el gráfico en una de las curvas.
 
 De esta forma cada usuario puede explorar los datos por su cuenta y construir el gráfico de preferencia.
 
