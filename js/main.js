@@ -552,7 +552,7 @@ Promise.all([
 
         function entered() {
           path.style("mix-blend-mode", null).attr("stroke", "#ddd");
-          dot.attr("display", null);
+          // dot.attr("display", null);
           label.attr("display", null);
         }
 
@@ -562,7 +562,7 @@ Promise.all([
               .attr("stroke", curveColor)
               .attr("stroke-width", curveWidth)
           path.style("mix-blend-mode", "multiply").attr("stroke", null);
-          dot.attr("display", "none");
+          // dot.attr("display", "none");
           label.attr("display", "none");
         }
 
