@@ -153,11 +153,11 @@ body {
 
 .footer a {
   color: gray;
+  text-decoration: underline;
 }
 
 .footer a:hover{
   color: black;
-  text-decoration: none;
 }
 
 input::-webkit-outer-spin-button,
