@@ -282,7 +282,8 @@ Promise.all([
 
       if (state.indicador == "casos") {
         if (state.microzona == "Comuna") {
-          state.data = data[0];
+          state.data = data[0].filter(d => d.Comuna.indexOf('Desconocido'));
+          state.data.columns = data[0].columns;
         } else if (state.microzona == "Region"){
           state.data = data[2];
         }
