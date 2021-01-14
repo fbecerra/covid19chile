@@ -64,7 +64,7 @@ var dateFormat = d3.timeFormat("%d de %B");
 
 var xAxis = d3.axisBottom()
             .tickFormat(d3.timeFormat("%d %B"))
-            .ticks(d3.timeWeek.every(1))
+            .ticks(d3.timeMonth.every(1))
             .tickSizeOuter(0);
 var yAxis;
 
