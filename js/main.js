@@ -32,7 +32,7 @@ var state = {
     }
 
 var lineOpacity = 0.5,
-    threshold = 10;
+    threshold = 50;
 
 var xScale = d3.scaleTime()
     .range([margin.left, width - margin.right])
