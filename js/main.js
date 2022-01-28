@@ -32,7 +32,9 @@ var state = {
     }
 
 var lineOpacity = 0.5,
-    threshold = 50;
+    threshold = 100;
+
+d3.select("#casos-minimos").html(threshold);
 
 var xScale = d3.scaleTime()
     .range([margin.left, width - margin.right])
