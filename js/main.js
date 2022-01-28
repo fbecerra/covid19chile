@@ -301,7 +301,7 @@ Promise.all([
 
       state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.node().options[unidad.node().selectedIndex].text;
 
-      datesString = state.data.columns.filter(d => (d.slice(0,4) == '2020') || (d.slice(0,4) == '2021'));
+      datesString = state.data.columns.filter(d => (d.slice(0,4) == '2020') || (d.slice(0,4) == '2021') || (d.slice(0,4) == '2022'));
       var dates = datesString.map(d => dateParse(d));
       let factor;
 
