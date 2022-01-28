@@ -62,11 +62,11 @@ var yLabel = gYAxis.append("g")
     .append("text")
     .attr("class", "y axis-title")
 
-var dateFormat = d3.timeFormat("%d de %B");
+var dateFormat = d3.timeFormat("%d de %B de %Y");
 
 var xAxis = d3.axisBottom()
-            .tickFormat(d3.timeFormat("%d %B"))
-            .ticks(d3.timeMonth.every(1))
+            .tickFormat(d3.timeFormat("%d/%m/%y"))
+            .ticks(d3.timeMonth.every(4))
             .tickSizeOuter(0);
 var yAxis;
 
