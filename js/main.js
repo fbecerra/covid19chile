@@ -176,7 +176,7 @@ Promise.all([
         updatePlot();
       });
 
-      let cantidad = addOptions("cantidad", ["acumulados", "nuevos"], ["acumulados", "nuevos"]);
+      let cantidad = addOptions("cantidad", ["nuevos", "acumulados"], ["nuevos", "acumulados"]);
       state.cantidad = cantidad.node().value;
       cantidad.on("change", function(d){
         state.cantidad = d3.select(this).node().value;
@@ -184,7 +184,7 @@ Promise.all([
         updatePlot();
       });
 
-      unidad = addOptions("unidad", ["totales", "por cada 100.000 habitantes", "promedio 7 días"], ["totales", "tasa", "promedio"]);
+      unidad = addOptions("unidad", ["promedio 7 días", "totales", "por cada 100.000 habitantes"], ["promedio", "totales", "tasa"]);
       state.unidad = unidad.node().value;
       unidad.on("change", function(d){
         state.unidad = d3.select(this).node().value;
