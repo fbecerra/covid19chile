@@ -11,7 +11,7 @@ var margin = {top: 20, right: 80, bottom: 20, left: 50},
     width = plotWidth - margin.left - margin.right,
     height = plotHeight - margin.top - margin.bottom;
 
-var dateParse = d3.timeParse("%Y-%m-%d");
+var dateParse = d3.timeParse("%d-%m-%Y");
 
 var colors = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00', '#a65628','#f781bf','#999999']
 
@@ -301,7 +301,7 @@ Promise.all([
 
       state.yLabel = capitalize(state.indicador) + " " + state.cantidad + " " + unidad.node().options[unidad.node().selectedIndex].text;
 
-      datesString = state.data.columns.filter(d => (d.slice(0,4) == '2020') || (d.slice(0,4) == '2021') || (d.slice(0,4) == '2022'));
+      datesString = state.data.columns.filter(d => (d.slice(6,10) == '2020') || (d.slice(6,10) == '2021') || (d.slice(6,10) == '2022') || (d.slice(6,10) == '2023'));
       var dates = datesString.map(d => dateParse(d));
       let factor;
 
